@@ -1,0 +1,7 @@
+[alias]
+    co = checkout
+    amend = commit --amend --no-edit
+    main = !git checkout main && git pull
+    sync = !git pull && git push
+    unstage = reset --soft HEAD^
+    list-aliases = "!git config -l | grep alias | cut -c 7-"
