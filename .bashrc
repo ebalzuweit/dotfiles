@@ -2,6 +2,7 @@
 alias home='cd ~'
 alias ..='cd ..'
 alias back='cd -'
+alias root='cd /'
 
 alias la='ls -a'
 alias ll='ls -l'
