@@ -4,7 +4,7 @@ alias ..='cd ..'
 alias back='cd -'
 alias root='cd /'
 
-alias la='ls -a'
+alias la='ls -A'
 alias ll='ls -l'
 
 alias ga='git add'
