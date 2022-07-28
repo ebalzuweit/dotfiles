@@ -5,7 +5,7 @@ alias back='cd -'
 alias root='cd /'
 
 alias la='ls -A'
-alias ll='ls -lh'
+alias ll='ls -Alh'
 
 alias ga='git add'
 alias gc='git commit -m'
