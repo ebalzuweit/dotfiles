@@ -7,3 +7,4 @@
     list-aliases = "!git config -l | grep alias | cut -c 7-"
     find-merge = "!sh -c 'commit=$0 && branch=${1:-HEAD} && (git rev-list $commit..$branch --ancestry-path | cat -n; git rev-list $commit..$branch --first-parent | cat -n) | sort -k2 -s | uniq -f1 -d | sort -n | tail -1 | cut -f2'"
     clean-local-branches = "!git checkout main && git remote update origin --prune && git branch -vv | grep ': gone]' | awk '{print $1}' | xargs -r git branch -D"
+
