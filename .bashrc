@@ -14,6 +14,9 @@ alias gs='git status'
 alias push='git push'
 alias pull='git pull'
 
+# configuration
+export HISTCONTROL=ignoredups
+
 # prompt
 if [ -f ~/.bash_prompt ]; then
     source ~/.bash_prompt;
