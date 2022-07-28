@@ -14,3 +14,7 @@ alias gs='git status'
 alias push='git push'
 alias pull='git pull'
 
+# prompt
+if [ -f ~/.bash_prompt ]; then
+    source ~/.bash_prompt;
+fi;
