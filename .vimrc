@@ -1,6 +1,9 @@
 " do not make vim compatible with vi.
 set nocompatible
 
+" tabs = 4 spaces
+set tabstop=4
+
 " show line numbers
 set number
 " show current position
