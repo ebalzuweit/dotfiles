@@ -5,3 +5,5 @@
     sync = !git pull && git push
     unstage = reset --soft HEAD^
     list-aliases = "!git config -l | grep alias | cut -c 7-"
+    find-merge = "!sh -c 'commit=$0 && branch=${1:-HEAD} && (git rev-list $commit..$branch --ancestry-path | cat -n; git rev-list $commit..$branch --first-parent | cat -n) | sort -k2 -s | uniq -f1 -d | sort -n | tail -1 | cut -f2'"
+    # clean-merged-branches = "!git branch --merged | egrep -v '(^\*|main)' | xargs git branch -d"
