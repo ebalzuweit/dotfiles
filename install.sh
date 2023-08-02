@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 # adapted from https://github.com/mathiasbynens/dotfiles/blob/main/bootstrap.sh
 
