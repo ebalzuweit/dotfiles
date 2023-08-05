@@ -14,6 +14,8 @@ alias gs='git status'
 alias push='git push'
 alias pull='git pull'
 
+alias gg='lazygit'
+
 # configuration
 export HISTCONTROL=ignoredups
 
