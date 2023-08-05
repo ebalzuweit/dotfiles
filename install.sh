@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 # adapted from https://github.com/mathiasbynens/dotfiles/blob/main/bootstrap.sh
 
@@ -13,7 +13,7 @@ function installDotfiles() {
     cp .bashrc ~;
     echo "  .vimrc";
     cp .vimrc ~;
-    echo "  .gitignore - Automatic installation not supported at this time.";
+    echo "  .gitconfig - Automatic installation not supported at this time.";
 
     source ~/.bash_profile;
 }
