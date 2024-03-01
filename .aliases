@@ -1,0 +1,20 @@
+# directories
+alias home='cd ~'
+alias ..='cd ..'
+alias back='cd -'
+alias root='cd /'
+
+# ls
+alias la='ls -A'
+alias ll='ls -Alh'
+
+# git
+alias ga='git add'
+alias gc='git commit -m'
+alias gf='git fetch'
+alias gs='git status'
+alias push='git push'
+alias pull='git pull'
+
+# programs
+alias gg='lazygit'
