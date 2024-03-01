@@ -1,20 +1,7 @@
 # aliases
-alias home='cd ~'
-alias ..='cd ..'
-alias back='cd -'
-alias root='cd /'
-
-alias la='ls -A'
-alias ll='ls -Alh'
-
-alias ga='git add'
-alias gc='git commit -m'
-alias gf='git fetch'
-alias gs='git status'
-alias push='git push'
-alias pull='git pull'
-
-alias gg='lazygit'
+if [ -f ~/.aliases ]; then
+   source ~/.aliases
+fi
 
 # configuration
 export HISTCONTROL=ignoredups
