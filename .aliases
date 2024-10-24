@@ -1,8 +1,10 @@
 # directories
 alias home='cd ~'
 alias ..='cd ..'
+alias ...='cd ../..'
 alias back='cd -'
 alias root='cd /'
+alias repos='cd ~/source/repos'
 
 # ls
 alias la='ls -A'
