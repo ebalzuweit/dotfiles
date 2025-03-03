@@ -31,7 +31,7 @@
 	autoStash = true
 	updateRefs = true
 [merge]
-	conflictstyle = zdiff3
+	conflictstyle = diff3
 [pull]
 	rebase = true
 [alias]
