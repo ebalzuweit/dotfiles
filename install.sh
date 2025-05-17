@@ -16,6 +16,8 @@ function installDotfiles() {
   cp .bashrc ~
   echo "  .zshrc"
   cp .zshrc ~
+  echo "  .wezterm.lua"
+  cp .wezterm.lua ~
   echo "  .vimrc"
   cp .vimrc ~
   echo "  nvim"
