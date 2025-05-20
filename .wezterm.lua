@@ -5,6 +5,7 @@ local config = wezterm.config_builder()
 config.font_size = 14
 
 -- Window
+config.color_scheme = "Catppuccin Mocha"
 config.window_background_opacity = 0.8
 
 -- Windows OS
