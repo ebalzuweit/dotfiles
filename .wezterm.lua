@@ -7,4 +7,12 @@ config.font_size = 14
 -- Window
 config.window_background_opacity = 0.8
 
+-- Windows OS
+local is_windows_os = function()
+	return wezterm.target_triple:find("windows") ~= nil
+end
+if is_windows_os() then
+	config.default_domain = "WSL:Ubuntu"
+end
+
 return config
