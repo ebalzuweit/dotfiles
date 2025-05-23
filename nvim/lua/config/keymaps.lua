@@ -4,3 +4,7 @@
 
 -- Escape Terminal mode with <Esc><Esc>
 vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", {})
+
+-- Swap 0 and ^ keybindings
+vim.keymap.set({ "n", "v" }, "0", "^", { desc = "Go to first non-blank character" })
+vim.keymap.set({ "n", "v" }, "^", "0", { desc = "Go to beginning of line" })
