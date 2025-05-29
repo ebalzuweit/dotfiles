@@ -22,6 +22,8 @@ function installDotfiles() {
   cp .vimrc ~
   echo "  nvim"
   cp -r nvim/ ~/.config/
+  echo "  scripts"
+  cp scripts/* ~/.local/bin/
 
   echo "  .gitconfig - Automatic installation not supported at this time."
 
