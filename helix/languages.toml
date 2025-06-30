@@ -1,0 +1,12 @@
+[[language]]
+name = "python"
+# Install LSPs with `uv tool install`
+language-servers = [ "basedpyright", "ruff" ]
+auto-format = true
+
+[language-server.basedpyright]
+typeCheckingMode = "basic"
+
+[language-server.ruff]
+command = "ruff"
+args = ["server"]
