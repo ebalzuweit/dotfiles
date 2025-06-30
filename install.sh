@@ -22,6 +22,8 @@ function installDotfiles() {
   cp .vimrc ~
   echo "  nvim"
   cp -R nvim ~/.config/
+  echo "  helix"
+  cp -R helix ~/.config/
   echo "  zellij"
   cp -R zellij ~/.config/
   echo "  scripts"

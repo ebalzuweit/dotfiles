@@ -1,0 +1,7 @@
+theme = "catppuccin_mocha"
+
+[keys.normal]
+C-s = ":w" # Save file
+
+[keys.insert]
+C-s = ["normal_mode", ":w"] # Enter normal mode and save file
