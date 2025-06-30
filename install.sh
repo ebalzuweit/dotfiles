@@ -21,7 +21,7 @@ function installDotfiles() {
   echo "  .vimrc"
   cp .vimrc ~
   echo "  nvim"
-  cp -r nvim/ ~/.config/
+  cp -R nvim ~/.config/
   echo "  scripts"
   cp scripts/* ~/.local/bin/
 
