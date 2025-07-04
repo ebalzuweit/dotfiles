@@ -1,7 +1,23 @@
 theme = "catppuccin_mocha"
 
+[editor]
+cursorline = true
+gutters = ["diagnostics", "line-numbers"]
+line-number = "relative"
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.soft-wrap]
+enable = true
+
 [keys.normal]
 C-s = ":w" # Save file
+
+[keys.normal.space]
+g = { g = [":new", ":insert-output lazygit", ":buffer-close!", ":redraw"] }
 
 [keys.insert]
 C-s = ["normal_mode", ":w"] # Enter normal mode and save file
