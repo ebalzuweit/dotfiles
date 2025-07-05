@@ -4,11 +4,19 @@ theme = "catppuccin_mocha"
 cursorline = true
 gutters = ["diagnostics", "line-numbers"]
 line-number = "relative"
+end-of-line-diagnostics = "hint"
 
 [editor.cursor-shape]
 insert = "bar"
 normal = "block"
 select = "underline"
+
+[editor.lsp]
+display-inlay-hints = true
+display-messages = true
+
+[editor.inline-diagnostics]
+cursor-line = "warning"
 
 [editor.soft-wrap]
 enable = true
