@@ -27,6 +27,10 @@ end
 
 -- Fonts
 config.font_size = 12
+config.font = wezterm.font_with_fallback {
+	'JetBrainsMono Nerd Font',
+	'JetBrains Mono'
+}
 
 -- Window
 config.color_scheme = "Catppuccin Mocha"
