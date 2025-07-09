@@ -24,6 +24,8 @@ function installDotfiles() {
   cp -R nvim ~/.config/
   echo "  helix"
   cp -R helix ~/.config/
+  echo "  yazi"
+  cp -R yazi ~/.config/
   echo "  zellij"
   cp -R zellij ~/.config/
   echo "  scripts"
