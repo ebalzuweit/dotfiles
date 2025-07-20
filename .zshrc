@@ -75,17 +75,3 @@ precmd() {
 }
 PROMPT="%B%F{15}$%f%b ";
 PS2="%B%F{136}→%f%b ";
-
-# auto-start zellij 
-# if [[ -z "$ZELLIJ" ]]
-# then
-#     if [[ "$ZELLIJ_AUTO_ATTACH" == "true" ]]; then
-#         zellij attach -c
-#     else
-#         zellij
-#     fi
-
-#     if [[ "$ZELLIJ_AUTO_EXIT" == "true" ]]; then
-#         exit
-#     fi
-# fi
