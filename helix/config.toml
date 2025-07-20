@@ -24,7 +24,7 @@ enable = true
 [keys.normal]
 C-s = ":w" # Save file
 
-[keys.normal.space]
+[keys.normal.space.g]
 g = [":new", ":insert-output lazygit", ":buffer-close!", ":redraw"]
 
 [keys.insert]
