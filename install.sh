@@ -40,10 +40,36 @@ function installDotfiles() {
   echo "- ~/.zshrc"
 }
 
+# Function to install Homebrew if it's not already installed
+function install_homebrew() {
+  if ! command -v brew &>/dev/null; then
+    echo "Homebrew not found. Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    # Add Homebrew to PATH for the current session if it wasn't already
+    if [ -f "/opt/homebrew/bin/brew" ]; then # For Apple Silicon
+      eval "$(/opt/homebrew/bin/brew shellenv)"
+    elif [ -f "/usr/local/bin/brew" ]; then # For Intel Macs
+      eval "$(/usr/local/bin/brew shellenv)"
+    fi
+    echo "Homebrew installed successfully!"
+  else
+    echo "Homebrew is already installed."
+  fi
+}
+
 read -p "This is a one-way, destructive process. Are you sure? (y/n) " -n 1
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   installDotfiles
+
+  # Check and install Homebrew
+  install_homebrew
+
+  # Install the necessary packages using Homebrew
+  echo "Installing required packages with Homebrew..."
+  brew install git eza fd fzf yazi
+  echo "Homebrew packages installed."
 fi
 
 unset installDotfiles
+unset install_homebrew
