@@ -103,3 +103,50 @@ function y() {
 	[ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
 	rm -f -- "$tmp"
 }
+
+local GIT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+# A powerful, context-aware project finder that displays clean, relative paths.
+# If run inside a git repository, it searches only within that project.
+# Otherwise, it searches from your home directory.
+# Usage: Type 'ff' in your terminal and press Enter.
+ff() {
+  # Attempt to find the root of the current git repository. 
+  local git_root
+  git_root=$(git rev-parse --show-toplevel 2>/dev/null)
+    
+  local search_path
+  # Check if we are inside a git repository.
+  if [[ -n "$git_root" ]]; then
+    # If yes, set the search path to the project's root directory.
+    search_path="$git_root"
+  else
+    # If no, fall back to searching from the home directory.
+    search_path="$HOME"
+  fi
+
+  # We need to export the search_path so the fzf preview subshell can access it.
+  export FZF_FF_SEARCH_PATH="$search_path"
+
+  # Find directories, strip the base path for a clean display, and pipe to fzf.
+  local selected_relative_path
+  selected_relative_path=$(fd --type d . "$search_path" --hidden --exclude .git --exclude node_modules \
+    | sed "s|^$search_path/||" \
+    | fzf \
+      --preview 'eza --tree --color=always --icons=always --level=2 "$FZF_FF_SEARCH_PATH"/{}' \
+      --preview-window 'right:50%' \
+      --height '80%' \
+      --border 'rounded' \
+      --header 'Project Finder | Press Enter to select')
+
+  # If a directory was selected (i.e., you pressed Enter)...
+  if [[ -n "$selected_relative_path" ]]; then
+    # ...reconstruct the full path by prepending the search_path.
+    local full_path="$search_path/$selected_relative_path"
+    # Change the current directory of your terminal to that full path.
+    cd "$full_path" || return
+    # Optional: clear the screen and show a tree of the new location.
+    clear
+    eza --tree --icons=always -L 2
+  fi
+}
+alias ls='eza --icons --git --color=always --group-directories-first --tree --level=2 --no-permissions --no-user --no-time'
