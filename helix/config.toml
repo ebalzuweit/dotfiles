@@ -18,6 +18,9 @@ display-messages = true
 [editor.inline-diagnostics]
 cursor-line = "warning"
 
+[editor.file-picker]
+hidden = false
+
 [editor.soft-wrap]
 enable = true
 
