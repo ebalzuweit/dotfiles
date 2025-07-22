@@ -4,7 +4,19 @@
     "lazyvim.plugins.extras.lang.markdown",
     "lazyvim.plugins.extras.lang.omnisharp",
     "lazyvim.plugins.extras.lang.python",
-    "lazyvim.plugins.extras.lang.toml"
+    "lazyvim.plugins.extras.lang.toml",
+    "lazyvim.plugins.extras.ai.copilot",
+    "lazyvim.plugins.extras.coding.yanky",
+    "lazyvim.plugins.extras.util.dot",
+    "lazyvim.plugins.extras.editor.snacks_picker",
+    "lazyvim.plugins.extras.ai.copilot-chat",
+    "lazyvim.plugins.extras.lang.go",
+    "lazyvim.plugins.extras.lang.helm",
+    "lazyvim.plugins.extras.lang.git",
+    "lazyvim.plugins.extras.lang.typescript",
+    "lazyvim.plugins.extras.lang.yaml",
+    "lazyvim.plugins.extras.lang.json",
+    "lazyvim.plugins.extras.lang.sql"
   ],
   "install_version": 8,
   "news": {
