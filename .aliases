@@ -7,8 +7,10 @@ alias root='cd /'
 alias repos='cd ~/source/repos'
 
 # ls
-alias la='ls -A'
-alias ll='ls -Alh'
+alias ls='eza --icons --git --color=always --group-directories-first --tree --level=2 --no-permissions --no-user --no-time'
+
+# read files
+alias cat='bat --paging=never'
 
 # git
 alias ga='git add'
@@ -22,3 +24,4 @@ alias pull='git pull'
 alias gg='lazygit'
 alias dd='lazydocker'
 alias zj='zellij'
+
