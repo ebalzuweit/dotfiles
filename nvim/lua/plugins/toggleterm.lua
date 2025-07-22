@@ -32,13 +32,15 @@ return {
         vim.api.nvim_create_user_command(
             "TermV33", -- Unique command name for vertical 33% width
             function()
-                require("toggleterm.terminal").Terminal
-                    :new({
-                        direction = "vertical",
-                        size = vim.o.columns * 0.33, -- Explicitly set width for this command (33% of columns)
-                        hidden = true, -- Start hidden, then toggle visible
-                    })
-                    :toggle()
+                local term = require("toggleterm.terminal").Terminal:new({
+                    direction = "vertical",
+                    size = vim.o.columns * 0.33, -- Explicitly set width for this command (33% of columns)
+                    hidden = true, -- Start hidden, then toggle visible
+                })
+                -- Wrap toggle in vim.schedule to ensure it runs in the next event loop cycle
+                vim.schedule(function()
+                    term:toggle()
+                end)
             end,
             { nargs = 0, desc = "Toggle 33% Vertical Terminal" }
         )
@@ -47,33 +49,37 @@ return {
         vim.api.nvim_create_user_command(
             "TermH33", -- UNIQUE command name for horizontal 33% height
             function()
-                require("toggleterm.terminal").Terminal
-                    :new({
-                        direction = "horizontal",
-                        size = vim.o.lines * 0.33, -- Explicitly set height for this command (33% of lines)
-                        hidden = true, -- Start hidden, then toggle visible
-                    })
-                    :toggle()
+                local term = require("toggleterm.terminal").Terminal:new({
+                    direction = "horizontal",
+                    size = vim.o.lines * 0.33, -- Explicitly set height for this command (33% of lines)
+                    hidden = true, -- Start hidden, then toggle visible
+                })
+                -- Wrap toggle in vim.schedule to ensure it runs in the next event loop cycle
+                vim.schedule(function()
+                    term:toggle()
+                end)
             end,
             { nargs = 0, desc = "Toggle 33% Horizontal Terminal" }
         )
 
         -- === Existing: Floating terminal for 'gemini' command ===
         vim.api.nvim_create_user_command("GeminiTerm", function()
-            require("toggleterm.terminal").Terminal
-                :new({
-                    cmd = "gemini",
-                    direction = "float",
-                    float_opts = {
-                        border = "curved",
-                        width = math.floor(vim.o.columns * 0.8),
-                        height = math.floor(vim.o.lines * 0.8),
-                        row = math.floor((vim.o.lines - (vim.o.lines * 0.8)) / 2),
-                        col = math.floor((vim.o.columns - (vim.o.columns * 0.8)) / 2),
-                    },
-                    hidden = true,
-                })
-                :toggle()
+            local term = require("toggleterm.terminal").Terminal:new({
+                cmd = "gemini",
+                direction = "float",
+                float_opts = {
+                    border = "curved",
+                    width = math.floor(vim.o.columns * 0.8),
+                    height = math.floor(vim.o.lines * 0.8),
+                    row = math.floor((vim.o.lines - (vim.o.lines * 0.8)) / 2),
+                    col = math.floor((vim.o.columns - (vim.o.columns * 0.8)) / 2),
+                },
+                hidden = true,
+            })
+            -- Wrap toggle in vim.schedule to ensure it runs in the next event loop cycle
+            vim.schedule(function()
+                term:toggle()
+            end)
         end, { nargs = 0, desc = "Toggle Floating Gemini Terminal" })
     end,
     -- Keymaps for all terminals
