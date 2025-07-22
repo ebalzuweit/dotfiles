@@ -13,10 +13,6 @@ return {
                 -- Default vertical terminal width (e.g., if <C-t> opens vertical)
                 return vim.o.columns * 0.33
             end
-            -- For floating, you might return percentages here if it were the default:
-            -- elseif term.direction == "float" then
-            --    return vim.o.lines * 0.8
-            -- end
         end,
         open_mapping = [[<C-t>]], -- Key to toggle the default terminal
         hide_numbers = true, -- hide the number column in the terminal
@@ -81,13 +77,64 @@ return {
                 term:toggle()
             end)
         end, { nargs = 0, desc = "Toggle Floating Gemini Terminal" })
+
+        -- === NEW: Floating terminal running ff_term_horizontal ===
+        vim.api.nvim_create_user_command("TermFFH", function()
+            local term = require("toggleterm.terminal").Terminal:new({
+                cmd = "ff_term_horizontal", -- This will run the shell script
+                direction = "float",
+                float_opts = {
+                    border = "curved",
+                    width = math.floor(vim.o.columns * 0.8),
+                    height = math.floor(vim.o.lines * 0.8),
+                    row = math.floor((vim.o.lines - (vim.o.lines * 0.8)) / 2),
+                    col = math.floor((vim.o.columns - (vim.o.columns * 0.8)) / 2),
+                },
+                hidden = true,
+                -- This on_exit callback is crucial to close the temporary floating terminal
+                -- after the ff_term_horizontal script has completed.
+                on_exit = function(t)
+                    vim.schedule(function()
+                        t:close()
+                    end)
+                end,
+            })
+            vim.schedule(function()
+                term:toggle()
+            end)
+        end, { nargs = 0, desc = "Fuzzy Find Folder and Open Horizontal Terminal" })
+
+        -- === NEW: Floating terminal running ff_term_vertical ===
+        vim.api.nvim_create_user_command("TermFFV", function()
+            local term = require("toggleterm.terminal").Terminal:new({
+                cmd = "ff_term_vertical", -- This will run the shell script
+                direction = "float",
+                float_opts = {
+                    border = "curved",
+                    width = math.floor(vim.o.columns * 0.8),
+                    height = math.floor(vim.o.lines * 0.8),
+                    row = math.floor((vim.o.lines - (vim.o.lines * 0.8)) / 2),
+                    col = math.floor((vim.o.columns - (vim.o.columns * 0.8)) / 2),
+                },
+                hidden = true,
+                on_exit = function(t)
+                    vim.schedule(function()
+                        t:close()
+                    end)
+                end,
+            })
+            vim.schedule(function()
+                term:toggle()
+            end)
+        end, { nargs = 0, desc = "Fuzzy Find Folder and Open Vertical Terminal" })
     end,
     -- Keymaps for all terminals
     keys = {
         { "<leader>tv", "<cmd>TermV33<CR>", desc = "Toggle 33% Vertical Terminal" },
-        -- === CORRECTED: Keymap for the 33% horizontal terminal ===
         { "<leader>th", "<cmd>TermH33<CR>", desc = "Toggle 33% Horizontal Terminal" },
-        -- === Existing: Keymap for the Gemini terminal ===
         { "<leader>tg", "<cmd>GeminiTerm<CR>", desc = "Toggle Floating Gemini Terminal" },
+        -- === NEW KEYMAPS ===
+        { "<leader>tfh", "<cmd>TermFFH<CR>", desc = "Fuzzy Find Folder & Open Horizontal Terminal" },
+        { "<leader>tfv", "<cmd>TermFFV<CR>", desc = "Fuzzy Find Folder & Open Vertical Terminal" },
     },
 }

@@ -30,6 +30,8 @@ function installDotfiles() {
   cp -R zellij ~/.config/
   echo "  scripts"
   cp scripts/* ~/.local/bin/
+  chmod +x ~/.local/bin/ff_term_horizontal
+  chmod +x ~/.local/bin/ff_term_vertical
 
   echo "  .gitconfig - Automatic installation not supported at this time."
 

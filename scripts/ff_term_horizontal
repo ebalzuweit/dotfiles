@@ -1,0 +1,39 @@
+#!/bin/zsh
+# This script is executed by ToggleTerm, runs fzf, and then tells Neovim
+# to open a new horizontal terminal split in the selected directory.
+
+# Ensure fzf, fd, and eza are in your PATH
+# Also ensure nvim is in your PATH and accessible for --cmd calls
+
+local git_root
+git_root=$(git rev-parse --show-toplevel 2>/dev/null)
+
+local search_path
+if [[ -n "$git_root" ]]; then
+  search_path="$git_root"
+else
+  search_path="$HOME"
+fi
+
+export FZF_FF_SEARCH_PATH="$search_path" # Export for fzf preview
+
+local selected_relative_path
+selected_relative_path=$(fd --type d . "$search_path" --hidden --exclude .git --exclude node_modules \
+  | sed "s|^$search_path/||" \
+  | fzf \
+    --preview 'eza --tree --color=always --icons=always --level=2 "$FZF_FF_SEARCH_PATH"/{}' \
+    --preview-window 'right:50%' \
+    --height '80%' \
+    --border 'rounded' \
+    --header 'Project Finder | Select folder for new H-Term')
+
+# If a path was selected in fzf
+if [[ -n "$selected_relative_path" ]]; then
+  local full_path="$search_path/$selected_relative_path"
+  
+  # Send a Lua command back to Neovim to open the new terminal
+  # We use vim.cmd to execute Lua code. The full_path needs to be escaped for Lua string.
+  # The 'cwd' option for Terminal:new sets the working directory of the new terminal.
+  # We use vim.schedule to ensure the command runs safely in Neovim's event loop.
+  nvim --cmd "lua vim.schedule(function() require('toggleterm.terminal').Terminal:new({direction='horizontal', size=vim.o.lines * 0.33, cwd='$full_path'}):toggle() end)"
+fi
