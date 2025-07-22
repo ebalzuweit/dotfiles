@@ -75,3 +75,23 @@ precmd() {
 }
 PROMPT="%B%F{15}$%f%b ";
 PS2="%B%F{136}→%f%b ";
+
+togglenetskope() {
+    # check if Netskope directory exists in /Library/Application Support and if does, move it to /Library/Application Support/Netskope_disabled
+    if [ -d "/Library/Application Support/Netskope" ]
+    then
+        sudo mv /Library/Application\ Support/Netskope /Library/Application\ Support/Netskope_disabled
+        echo "Netskope will shortly be disabled!"
+    else
+        sudo mv /Library/Application\ Support/Netskope_disabled /Library/Application\ Support/Netskope
+        echo "Netskope will shortly be enabled!"
+    fi
+
+    pids=$(ps aux | grep Netskope | grep -v grep | awk '{print $2}')
+
+    # go through each pid and kill it
+    while IFS= read -r pid; do
+        sudo kill -9 "$pid"
+        echo $?
+    done <<< "$pids"
+}
