@@ -22,3 +22,4 @@ alias pull='git pull'
 alias gg='lazygit'
 alias dd='lazydocker'
 alias zj='zellij'
+alias dev="zellij -l dev options --session-name $(basename $(pwd)) --attach-to-session true"
