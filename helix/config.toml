@@ -38,6 +38,7 @@ e = [
 ]
 
 [keys.normal.space.g]
+d = [":new", ":insert-output lazydocker", ":buffer-close!", ":redraw"]
 g = [":new", ":insert-output lazygit", ":buffer-close!", ":redraw"]
 
 [keys.insert]
