@@ -41,7 +41,7 @@ return {
             { nargs = 0, desc = "Toggle 33% Vertical Terminal" }
         )
 
-        -- === CORRECTED & NEW: Horizontal terminal at 33% height ===
+        -- === Horizontal terminal at 33% height ===
         vim.api.nvim_create_user_command(
             "TermH33", -- UNIQUE command name for horizontal 33% height
             function()
@@ -58,7 +58,7 @@ return {
             { nargs = 0, desc = "Toggle 33% Horizontal Terminal" }
         )
 
-        -- === Existing: Floating terminal for 'gemini' command ===
+        -- === Floating terminal for 'gemini' command ===
         vim.api.nvim_create_user_command("GeminiTerm", function()
             local term = require("toggleterm.terminal").Terminal:new({
                 cmd = "gemini",
@@ -78,10 +78,9 @@ return {
             end)
         end, { nargs = 0, desc = "Toggle Floating Gemini Terminal" })
 
-        -- === NEW: Floating terminal running ff_term_horizontal ===
-        vim.api.nvim_create_user_command("TermFFH", function()
+        vim.api.nvim_create_user_command("TermFF", function()
             local term = require("toggleterm.terminal").Terminal:new({
-                cmd = "ff_term_horizontal", -- This will run the shell script
+                -- Explicitly start zsh and tell it to run the 'ff' function
                 direction = "float",
                 float_opts = {
                     border = "curved",
@@ -91,50 +90,21 @@ return {
                     col = math.floor((vim.o.columns - (vim.o.columns * 0.8)) / 2),
                 },
                 hidden = true,
-                -- This on_exit callback is crucial to close the temporary floating terminal
-                -- after the ff_term_horizontal script has completed.
-                on_exit = function(t)
-                    vim.schedule(function()
-                        t:close()
-                    end)
-                end,
+                -- No on_exit here, as you might want to keep 'ff' open for multiple searches
+                -- and interact with the terminal after 'ff' completes.
             })
             vim.schedule(function()
                 term:toggle()
             end)
-        end, { nargs = 0, desc = "Fuzzy Find Folder and Open Horizontal Terminal" })
-
-        -- === NEW: Floating terminal running ff_term_vertical ===
-        vim.api.nvim_create_user_command("TermFFV", function()
-            local term = require("toggleterm.terminal").Terminal:new({
-                cmd = "ff_term_vertical", -- This will run the shell script
-                direction = "float",
-                float_opts = {
-                    border = "curved",
-                    width = math.floor(vim.o.columns * 0.8),
-                    height = math.floor(vim.o.lines * 0.8),
-                    row = math.floor((vim.o.lines - (vim.o.lines * 0.8)) / 2),
-                    col = math.floor((vim.o.columns - (vim.o.columns * 0.8)) / 2),
-                },
-                hidden = true,
-                on_exit = function(t)
-                    vim.schedule(function()
-                        t:close()
-                    end)
-                end,
-            })
-            vim.schedule(function()
-                term:toggle()
-            end)
-        end, { nargs = 0, desc = "Fuzzy Find Folder and Open Vertical Terminal" })
+        end, { nargs = 0, desc = "Toggle Floating Terminal with Fuzzy Folder Finder (ff)" })
     end,
+
     -- Keymaps for all terminals
     keys = {
         { "<leader>tv", "<cmd>TermV33<CR>", desc = "Toggle 33% Vertical Terminal" },
         { "<leader>th", "<cmd>TermH33<CR>", desc = "Toggle 33% Horizontal Terminal" },
+        -- === Keymaps for Fuzzy Finders and General Floating Terminals ===
+        { "<leader>tff", "<cmd>TermFF<CR>", desc = "Toggle General Floating Terminal" },
         { "<leader>tg", "<cmd>GeminiTerm<CR>", desc = "Toggle Floating Gemini Terminal" },
-        -- === NEW KEYMAPS ===
-        { "<leader>tfh", "<cmd>TermFFH<CR>", desc = "Fuzzy Find Folder & Open Horizontal Terminal" },
-        { "<leader>tfv", "<cmd>TermFFV<CR>", desc = "Fuzzy Find Folder & Open Vertical Terminal" },
     },
 }
