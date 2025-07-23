@@ -1,0 +1,50 @@
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="file:~/.config/zellij/plugins/zjstatus.wasm" {
+                format_left   "{mode} #[fg=#89B4FA,bold]{session}"
+                format_center "{tabs}"
+                format_right  "{command_git_branch} {datetime}"
+                format_space  ""
+
+                border_enabled  "false"
+                border_char     "─"
+                border_format   "#[fg=#6C7086]{char}"
+                border_position "bottom"
+
+                hide_frame_for_single_pane "true"
+
+                mode_normal  "#[bg=red]    "
+                mode_locked  "#[bg=blue]    "
+                mode_tmux    "#[bg=#ffc387]    "
+
+                tab_normal   "#[fg=#6C7086] {name} "
+                tab_active   "#[fg=#9399B2,bold,italic] {name} "
+
+                datetime        "#[fg=#6C7086,bold] {format} "
+                datetime_format "%A, %d %b %Y %_I:%M %p"
+                datetime_timezone "America/New_York"
+            }
+        }
+        children
+        // pane size=2 borderless=true {
+        //     plugin location="zellij:status-bar"
+        // }
+    }
+    tab name="dev" {
+        pane split_direction="horizontal" {
+            pane split_direction="vertical" {
+                pane {
+                    command "hx"
+                    name "editor"
+                    size "80%"
+                }
+                children
+            }
+            pane {
+                size "30%"
+                name "terminal"
+            }
+        }
+    }
+}
