@@ -43,3 +43,6 @@ g = [":new", ":insert-output lazygit", ":buffer-close!", ":redraw"]
 
 [keys.insert]
 C-s = ["normal_mode", ":w"] # Enter normal mode and save file
+
+[keys.select]
+C-s = [":w"] # Enter normal mode and save file
