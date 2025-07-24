@@ -27,5 +27,15 @@ alias zj='zellij'
 
 
 alias k="kubectl"
+alias ka="kubectl apply -f . -R"
 alias kctx="kubectx"
 alias kns="kubens"
+
+alias tf="terraform"
+alias tfa="terraform apply"
+alias tfi="terraform init"
+alias tfd="terraform destroy"
+alias tfp="terraform plan"
+alias tfs="terraform show"
+alias tfv="terraform validate"
+alias tfc="terraform console"

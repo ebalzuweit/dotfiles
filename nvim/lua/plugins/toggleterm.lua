@@ -81,7 +81,7 @@ return {
             function()
                 local term = require("toggleterm.terminal").Terminal:new({
                     direction = "horizontal",
-                    size = vim.o.lines * 0.50, -- Explicitly set height for this command (50% of lines)
+                    size = vim.o.lines * 0.5, -- Explicitly set height for this command (50% of lines)
                     hidden = true, -- Start hidden, then toggle visible
                 })
                 -- Wrap toggle in vim.schedule to ensure it runs in the next event loop cycle
