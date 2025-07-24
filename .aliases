@@ -25,3 +25,7 @@ alias gg='lazygit'
 alias dd='lazydocker'
 alias zj='zellij'
 
+
+alias k="kubectl"
+alias kctx="kubectx"
+alias kns="kubens"
