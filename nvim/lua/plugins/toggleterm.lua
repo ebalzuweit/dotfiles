@@ -106,5 +106,6 @@ return {
         -- === Keymaps for Fuzzy Finders and General Floating Terminals ===
         { "<leader>tff", "<cmd>TermFF<CR>", desc = "Toggle General Floating Terminal" },
         { "<leader>tg", "<cmd>GeminiTerm<CR>", desc = "Toggle Floating Gemini Terminal" },
+        { "<leader>tk", "<cmd>KubernetesTerm<CR>", desc = "Toggle Floating Kuberenetes Terminal" },
     },
 }
