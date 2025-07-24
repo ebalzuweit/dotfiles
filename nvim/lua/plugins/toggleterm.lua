@@ -58,6 +58,40 @@ return {
             { nargs = 0, desc = "Toggle 33% Horizontal Terminal" }
         )
 
+        -- Define a specific command and keymap for a 50% vertical terminal
+        vim.api.nvim_create_user_command(
+            "TermV50", -- Unique command name for vertical 50% width
+            function()
+                local term = require("toggleterm.terminal").Terminal:new({
+                    direction = "vertical",
+                    size = vim.o.columns * 0.50, -- Explicitly set width for this command (50% of columns)
+                    hidden = true, -- Start hidden, then toggle visible
+                })
+                -- Wrap toggle in vim.schedule to ensure it runs in the next event loop cycle
+                vim.schedule(function()
+                    term:toggle()
+                end)
+            end,
+            { nargs = 0, desc = "Toggle 50% Vertical Terminal" }
+        )
+
+        -- === Horizontal terminal at 50% height ===
+        vim.api.nvim_create_user_command(
+            "TermH50", -- UNIQUE command name for horizontal 50% height
+            function()
+                local term = require("toggleterm.terminal").Terminal:new({
+                    direction = "horizontal",
+                    size = vim.o.lines * 0.50, -- Explicitly set height for this command (50% of lines)
+                    hidden = true, -- Start hidden, then toggle visible
+                })
+                -- Wrap toggle in vim.schedule to ensure it runs in the next event loop cycle
+                vim.schedule(function()
+                    term:toggle()
+                end)
+            end,
+            { nargs = 0, desc = "Toggle 50% Horizontal Terminal" }
+        )
+
         -- === Floating terminal for 'gemini' command ===
         vim.api.nvim_create_user_command("GeminiTerm", function()
             local term = require("toggleterm.terminal").Terminal:new({
@@ -121,8 +155,10 @@ return {
 
     -- Keymaps for all terminals
     keys = {
-        { "<leader>tv", "<cmd>TermV33<CR>", desc = "Toggle 33% Vertical Terminal" },
-        { "<leader>th", "<cmd>TermH33<CR>", desc = "Toggle 33% Horizontal Terminal" },
+        { "<leader>tvt", "<cmd>TermV33<CR>", desc = "Toggle 33% Vertical Terminal" },
+        { "<leader>tht", "<cmd>TermH33<CR>", desc = "Toggle 33% Horizontal Terminal" },
+        { "<leader>tvh", "<cmd>TermV50<CR>", desc = "Toggle 50% Vertical Terminal" },
+        { "<leader>thh", "<cmd>TermH50<CR>", desc = "Toggle 50% Horizontal Terminal" },
         -- === Keymaps for Fuzzy Finders and General Floating Terminals ===
         { "<leader>tff", "<cmd>TermFF<CR>", desc = "Toggle General Floating Terminal" },
         { "<leader>tg", "<cmd>GeminiTerm<CR>", desc = "Toggle Floating Gemini Terminal" },
