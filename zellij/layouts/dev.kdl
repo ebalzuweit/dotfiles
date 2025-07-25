@@ -37,5 +37,6 @@ layout {
                 }
                 children
             }
+        }    
     }
 }
