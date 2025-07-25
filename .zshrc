@@ -212,7 +212,12 @@ ffn() {
         # ...reconstruct the full path by prepending the search_path.
         local full_path="$search_path/$selected_relative_path"
         cd "$full_path"
-        nvim .
+        # Get the name of the current directory to use as the session name.
+        # We replace periods with underscores as they can be problematic in session names.
+        local session_name=$(basename "$PWD" | tr '.' '_')
+        # Launch Zellij, creating a new session named after the directory,
+        # and have it immediately start nvim in the current path.
+        zellij --session "$session_name" -- nvim .
     fi
 }
 
@@ -257,3 +262,5 @@ fch() {
         eval "$selected_command"
     fi
 }
+
+
