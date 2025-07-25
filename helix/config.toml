@@ -39,7 +39,7 @@ e = [
 
 [keys.normal.space.g]
 d = [":new", ":insert-output lazydocker", ":buffer-close!", ":redraw"]
-g = [":new", ":insert-output lazygit", ":buffer-close!", ":redraw"]
+g = [":new", ":insert-output lazygit", ":buffer-close!", ":redraw", ":reload-all"]
 
 [keys.insert]
 C-s = ["normal_mode", ":w"] # Enter normal mode and save file
