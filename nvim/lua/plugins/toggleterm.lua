@@ -170,6 +170,25 @@ return {
             end)
         end, { nargs = 0, desc = "Toggle Floating Bluetooth Terminal" })
 
+        vim.api.nvim_create_user_command("ClaudeTerm", function()
+            local term = require("toggleterm.terminal").Terminal:new({
+                cmd = "claude",
+                direction = "float",
+                float_opts = {
+                    border = "curved",
+                    width = math.floor(vim.o.columns * 0.8),
+                    height = math.floor(vim.o.lines * 0.8),
+                    row = math.floor((vim.o.lines - (vim.o.lines * 0.8)) / 2),
+                    col = math.floor((vim.o.columns - (vim.o.columns * 0.8)) / 2),
+                },
+                hidden = true,
+            })
+            -- Wrap toggle in vim.schedule to ensure it runs in the next event loop cycle
+            vim.schedule(function()
+                term:toggle()
+            end)
+        end, { nargs = 0, desc = "Toggle Floating Claude Terminal" })
+
         vim.api.nvim_create_user_command("TermFF", function()
             local term = require("toggleterm.terminal").Terminal:new({
                 -- Explicitly start zsh and tell it to run the 'ff' function
@@ -202,6 +221,7 @@ return {
         { "<leader>tg", "<cmd>GeminiTerm<CR>", desc = "Toggle Floating Gemini Terminal" },
         { "<leader>tk", "<cmd>KubernetesTerm<CR>", desc = "Toggle Floating Kuberenetes Terminal" },
         { "<leader>ty", "<cmd>YaziTerm<CR>", desc = "Toggle Floating Yazi Terminal" },
+        { "<leader>ty", "<cmd>ClaudeTerm<CR>", desc = "Toggle Floating Claude Terminal" },
         { "<leader>tb", "<cmd>BluetoothTerm<CR>", desc = "Toggle Floating Bluetooth Terminal" },
     },
 }
