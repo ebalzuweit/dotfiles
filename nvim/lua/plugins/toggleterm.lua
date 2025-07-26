@@ -221,7 +221,7 @@ return {
         { "<leader>tg", "<cmd>GeminiTerm<CR>", desc = "Toggle Floating Gemini Terminal" },
         { "<leader>tk", "<cmd>KubernetesTerm<CR>", desc = "Toggle Floating Kuberenetes Terminal" },
         { "<leader>ty", "<cmd>YaziTerm<CR>", desc = "Toggle Floating Yazi Terminal" },
-        { "<leader>ty", "<cmd>ClaudeTerm<CR>", desc = "Toggle Floating Claude Terminal" },
+        { "<leader>tc", "<cmd>ClaudeTerm<CR>", desc = "Toggle Floating Claude Terminal" },
         { "<leader>tb", "<cmd>BluetoothTerm<CR>", desc = "Toggle Floating Bluetooth Terminal" },
     },
 }
