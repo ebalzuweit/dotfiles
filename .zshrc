@@ -217,7 +217,8 @@ ffn() {
         local session_name=$(basename "$PWD" | tr '.' '_')
         # Launch Zellij, creating a new session named after the directory,
         # and have it immediately start nvim in the current path.
-        zellij --session "$session_name" -- nvim .
+        # zellij --session "$session_name" -- nvim .
+        nvim .
     fi
 }
 
