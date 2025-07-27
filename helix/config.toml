@@ -26,6 +26,10 @@ enable = true
 
 [keys.normal]
 C-s = ":w" # Save file
+C-h = "jump_view_left"
+C-j = "jump_view_down"
+C-k = "jump_view_up"
+C-l = "jump_view_right"
 
 [keys.normal.space]
 # Replace File Explorer with yazi
