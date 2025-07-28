@@ -153,7 +153,7 @@ return {
 
         vim.api.nvim_create_user_command("BluetoothTerm", function()
             local term = require("toggleterm.terminal").Terminal:new({
-                cmd = "btui",
+                cmd = "bluetooth-tui",
                 direction = "float",
                 float_opts = {
                     border = "curved",
