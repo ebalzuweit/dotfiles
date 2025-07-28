@@ -69,6 +69,10 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   echo "Installing required packages with Homebrew..."
   brew install git eza fd fzf yazi zsh-autosuggestions zsh-syntax-highlighting bat kubectx k9s zellij neovim
   echo "Homebrew packages installed."
+
+  echo "Installing additional tools..."
+  cargo install --git https://github.com/MatthewMyrick/quill
+  echo "Additional tools installed."
 fi
 
 unset installDotfiles
