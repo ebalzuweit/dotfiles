@@ -16,6 +16,11 @@ setopt prompt_subst;
 [ -f "$(brew --prefix)/opt/fzf/shell/key-bindings.zsh" ] && source "$(brew --prefix)/opt/fzf/shell/key-bindings.zsh"
 # --- End Zsh Plugin Configuration ---
 
+# path fixes
+export PATH=$PATH:$(go env GOPATH)/bin
+
+# adding aliases to the PATH
+source "$HOME/.aliases";
 
 # --- Git Functions for Prompt ---
 git_branch() {
@@ -87,9 +92,6 @@ prompt_header() {
 
     echo -e "${header}";
 }
-
-# aliases
-source "$HOME/.aliases";
 
 # prompt
 precmd() {
@@ -264,4 +266,4 @@ fch() {
     fi
 }
 
-export PATH=$PATH:$(go env GOPATH)/bin
+
