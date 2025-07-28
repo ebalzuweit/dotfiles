@@ -212,7 +212,8 @@ return {
         vim.api.nvim_create_user_command("QuillTerm", function()
             local term = require("toggleterm.terminal").Terminal:new({
                 -- Explicitly start zsh and tell it to run the 'ff' function
-                direction = "quill",
+                cmd = "quill",
+                direction = "float",
                 float_opts = {
                     border = "curved",
                     width = math.floor(vim.o.columns * 0.8),
