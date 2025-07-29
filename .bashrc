@@ -1,12 +1,17 @@
 # aliases
-if [ -f ~/.aliases ]; then
-   source ~/.aliases
+if [ -f $HOME/.aliases ]; then
+   source $HOME/.aliases
+fi
+
+# paths
+if [ -f $HOME/.paths ]; then
+  source $HOME/.paths
 fi
 
 # configuration
 export HISTCONTROL=ignoredups
 
 # prompt
-if [ -f ~/.bash_prompt ]; then
-    source ~/.bash_prompt;
+if [ -f $HOME/.bash_prompt ]; then
+    source $HOME/.bash_prompt;
 fi;

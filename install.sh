@@ -7,29 +7,31 @@ function installDotfiles() {
 
   # copy files to home
   echo "  .aliases"
-  cp .aliases ~
+  cp .aliases $HOME
+  echo "  .paths"
+  cp .paths $HOME
   echo "  .bash_profile"
-  cp .bash_profile ~
+  cp .bash_profile $HOME
   echo "  .bash_prompt"
-  cp .bash_prompt ~
+  cp .bash_prompt $HOME
   echo "  .bashrc"
-  cp .bashrc ~
+  cp .bashrc $HOME
   echo "  .zshrc"
-  cp .zshrc ~
+  cp .zshrc $HOME
   echo "  .wezterm.lua"
-  cp .wezterm.lua ~
+  cp .wezterm.lua $HOME
   echo "  .vimrc"
-  cp .vimrc ~
+  cp .vimrc $HOME
   echo "  nvim"
-  cp -R nvim ~/.config/
+  cp -R nvim $HOME/.config/
   echo "  helix"
-  cp -R helix ~/.config/
+  cp -R helix $HOME/.config/
   echo "  yazi"
-  cp -R yazi ~/.config/
+  cp -R yazi $HOME/.config/
   echo "  zellij"
-  cp -R zellij ~/.config/
+  cp -R zellij $HOME/.config/
   echo "  scripts"
-  cp scripts/* ~/.local/bin/
+  cp scripts/* $HOME/.local/bin/
 
   echo "  .gitconfig - Automatic installation not supported at this time."
 

@@ -68,6 +68,9 @@ prompt_header() {
 # aliases
 source $HOME/.aliases;
 
+# paths
+source $HOME/.paths;
+
 # prompt
 precmd() {
 	echo # add newline before prompt header
