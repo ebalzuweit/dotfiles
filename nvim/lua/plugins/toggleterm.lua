@@ -229,6 +229,27 @@ return {
                 term:toggle()
             end)
         end, { nargs = 0, desc = "Toggle Floating Terminal with Quill" })
+
+        vim.api.nvim_create_user_command("AzureSearcherTerm", function()
+            local term = require("toggleterm.terminal").Terminal:new({
+                -- Explicitly start zsh and tell it to run the 'ff' function
+                cmd = "azure-searcher",
+                direction = "float",
+                float_opts = {
+                    border = "curved",
+                    width = math.floor(vim.o.columns * 0.8),
+                    height = math.floor(vim.o.lines * 0.8),
+                    row = math.floor((vim.o.lines - (vim.o.lines * 0.8)) / 2),
+                    col = math.floor((vim.o.columns - (vim.o.columns * 0.8)) / 2),
+                },
+                hidden = true,
+                -- No on_exit here, as you might want to keep 'ff' open for multiple searches
+                -- and interact with the terminal after 'ff' completes.
+            })
+            vim.schedule(function()
+                term:toggle()
+            end)
+        end, { nargs = 0, desc = "Toggle Floating Terminal with Azure Searcher" })
     end,
 
     -- Keymaps for all terminals
@@ -245,5 +266,6 @@ return {
         { "<leader>tc", "<cmd>ClaudeTerm<CR>", desc = "Toggle Floating Claude Terminal" },
         { "<leader>tb", "<cmd>BluetoothTerm<CR>", desc = "Toggle Floating Bluetooth Terminal" },
         { "<leader>tq", "<cmd>QuillTerm<CR>", desc = "Toggle Floating Quill Terminal" },
+        { "<leader>ta", "<cmd>AzureSearcherTerm<CR>", desc = "Toggle Floating Azure Searcher Terminal" },
     },
 }

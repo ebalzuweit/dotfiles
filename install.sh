@@ -73,6 +73,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   echo "Installing additional tools..."
   cargo install --git https://github.com/MatthewMyrick/quill
   go install github.com/MatthewMyrick/bluetooth-tui@latest
+  go install github.com/MatthewMyrick/azure-searcher@latest
   echo "Additional tools installed."
 fi
 
