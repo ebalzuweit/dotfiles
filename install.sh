@@ -67,7 +67,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 
   # Install the necessary packages using Homebrew
   echo "Installing required packages with Homebrew..."
-  brew install git eza fd fzf yazi zsh-autosuggestions zsh-syntax-highlighting bat kubectx k9s zellij neovim blueutil
+  brew install git eza fd fzf yazi zsh-autosuggestions zsh-syntax-highlighting bat kubectx k9s zellij neovim blueutil xmlstarlet
   echo "Homebrew packages installed."
 
   echo "Installing additional tools..."
@@ -75,6 +75,27 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   go install github.com/MatthewMyrick/bluetooth-tui@latest
   go install github.com/matthewmyrick/azure-searcher@latest
   echo "Additional tools installed."
+
+  echo "Setting up Python virtual environment for Neovim..."
+  if [ ! -d ~/.local/share/nvim/venv ]; then
+    echo "Creating new virtual environment..."
+    python3 -m venv ~/.local/share/nvim/venv
+  else
+    echo "Virtual environment already exists."
+  fi
+
+  source ~/.local/share/nvim/venv/bin/activate
+
+  # Check if packages are installed and update/install them
+  if pip show xlrd pylightxl &>/dev/null; then
+    echo "Packages already installed. Updating to latest versions..."
+    pip install --upgrade xlrd pylightxl
+  else
+    echo "Installing Python packages for Excel support..."
+    pip install xlrd pylightxl
+  fi
+
+  echo "Python virtual environment for Neovim configured."
 fi
 
 unset installDotfiles
