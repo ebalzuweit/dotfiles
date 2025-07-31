@@ -67,8 +67,16 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 
   # Install the necessary packages using Homebrew
   echo "Installing required packages with Homebrew..."
-  brew install git eza fd fzf yazi zsh-autosuggestions zsh-syntax-highlighting bat kubectx k9s zellij neovim blueutil xmlstarlet
+  brew install git eza fd fzf yazi zsh-autosuggestions zsh-syntax-highlighting bat kubectx k9s zellij neovim blueutil xmlstarlet golangci-lint jq jqp atac
   echo "Homebrew packages installed."
+  
+  # Fix Go linking if needed
+  if ! brew list go &>/dev/null; then
+    echo "Go not installed via Homebrew, skipping link fix."
+  else
+    echo "Ensuring Go is properly linked..."
+    brew link --overwrite go 2>/dev/null || true
+  fi
 
   echo "Installing additional tools..."
   cargo install --git https://github.com/MatthewMyrick/quill

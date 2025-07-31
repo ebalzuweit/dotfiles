@@ -40,5 +40,3 @@ alias tfv="terraform validate"
 alias tfc="terraform console"
 
 
-# xml
-alias r_xml='xmlstarlet format your_file.xml | bat -l xml --paging=always'
