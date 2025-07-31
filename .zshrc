@@ -546,7 +546,8 @@ ffgn() {
         # ...reconstruct the full path by prepending the search_path.
         local full_path="$search_path/$selected_relative_path"
         # Open the selected directory in Neovim.
-        nvim "$full_path"
+        cd "$full_path"
+        nvim .
     fi
 }
 
