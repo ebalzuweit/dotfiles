@@ -1,3 +1,4 @@
+
 setopt prompt_subst;
 
 # --- Zsh Plugin Configuration ---
@@ -459,9 +460,9 @@ k_port() {
 }
 
 
-# gcl (Git Clone) - Interactively find and clone a repository from a GitHub
+# ghc (Git Clone) - Interactively find and clone a repository from a GitHub
 # organization into a structured directory (~/GitHub/<org>/<repo>).
-gcl() {
+ghc() {
   # --- 1. Validate Input ---
   if [ -z "$1" ]; then
     echo "Usage: gc <organization_name>"
