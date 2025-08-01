@@ -54,6 +54,55 @@ function M.setup()
         end)
     end, { nargs = 0, desc = "Open Claude in Current Buffer" })
 
+    -- Gemini Buffer Terminal
+    vim.api.nvim_create_user_command("GeminiBufferTerm", function()
+        vim.cmd("terminal gemini")
+        vim.schedule(function()
+            set_terminal_name("gemini")
+        end)
+    end, { nargs = 0, desc = "Open Gemini in Current Buffer" })
+
+
+    -- Quill Buffer Terminal
+    vim.api.nvim_create_user_command("QuillBufferTerm", function()
+        vim.cmd("terminal quill")
+        vim.schedule(function()
+            set_terminal_name("quill")
+        end)
+    end, { nargs = 0, desc = "Open Quill in Current Buffer" })
+
+    -- Kubernetes (k9s) Buffer Terminal
+    vim.api.nvim_create_user_command("KubernetesBufferTerm", function()
+        vim.cmd("terminal k9s")
+        vim.schedule(function()
+            set_terminal_name("k9s")
+        end)
+    end, { nargs = 0, desc = "Open Kubernetes (k9s) in Current Buffer" })
+
+    -- Yazi Buffer Terminal
+    vim.api.nvim_create_user_command("YaziBufferTerm", function()
+        vim.cmd("terminal yazi")
+        vim.schedule(function()
+            set_terminal_name("yazi")
+        end)
+    end, { nargs = 0, desc = "Open Yazi in Current Buffer" })
+
+    -- Bluetooth Buffer Terminal
+    vim.api.nvim_create_user_command("BluetoothBufferTerm", function()
+        vim.cmd("terminal bluetooth-tui")
+        vim.schedule(function()
+            set_terminal_name("bluetooth-tui")
+        end)
+    end, { nargs = 0, desc = "Open Bluetooth TUI in Current Buffer" })
+
+    -- Azure Searcher Buffer Terminal
+    vim.api.nvim_create_user_command("AzureSearcherBufferTerm", function()
+        vim.cmd("terminal azure-searcher")
+        vim.schedule(function()
+            set_terminal_name("azure-searcher")
+        end)
+    end, { nargs = 0, desc = "Open Azure Searcher in Current Buffer" })
+
     -- General Buffer Terminal
     vim.api.nvim_create_user_command("BufferTerm", function()
         vim.cmd("terminal")
@@ -91,6 +140,12 @@ function M.keymaps()
     return {
         { "<leader>tt", "<cmd>BufferTerm<CR>", desc = "Open Terminal in Current Buffer" },
         { "<leader>tc", "<cmd>ClaudeBufferTerm<CR>", desc = "Open Claude in Current Buffer" },
+        { "<leader>tg", "<cmd>GeminiBufferTerm<CR>", desc = "Open Gemini in Current Buffer" },
+        { "<leader>tq", "<cmd>QuillBufferTerm<CR>", desc = "Open Quill in Current Buffer" },
+        { "<leader>tk", "<cmd>KubernetesBufferTerm<CR>", desc = "Open Kubernetes in Current Buffer" },
+        { "<leader>ty", "<cmd>YaziBufferTerm<CR>", desc = "Open Yazi in Current Buffer" },
+        { "<leader>tb", "<cmd>BluetoothBufferTerm<CR>", desc = "Open Bluetooth in Current Buffer" },
+        { "<leader>ta", "<cmd>AzureSearcherBufferTerm<CR>", desc = "Open Azure Searcher in Current Buffer" },
         { "<leader>tr", "<cmd>TerminalRename<CR>", desc = "Rename Terminal Buffer" },
     }
 end
