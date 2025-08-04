@@ -152,6 +152,44 @@ function M.setup()
             term:toggle()
         end)
     end, { nargs = 0, desc = "Toggle Floating Terminal with Azure Searcher" })
+
+    -- JQP Terminal with fuzzy JSON file finder
+    vim.api.nvim_create_user_command("JqpTerm", function()
+        local telescope = require("telescope.builtin")
+        local actions = require("telescope.actions")
+        local action_state = require("telescope.actions.state")
+        
+        telescope.find_files({
+            prompt_title = "Select JSON File for jqp",
+            cwd = vim.fn.getcwd(),
+            find_command = { "rg", "--files", "--glob", "*.json" },
+            attach_mappings = function(prompt_bufnr, map)
+                actions.select_default:replace(function()
+                    actions.close(prompt_bufnr)
+                    local selection = action_state.get_selected_entry()
+                    if selection then
+                        local file_path = selection[1]
+                        local term = require("toggleterm.terminal").Terminal:new({
+                            cmd = "jqp -f " .. file_path,
+                            direction = "float",
+                            float_opts = {
+                                border = "curved",
+                                width = math.floor(vim.o.columns * 0.9),
+                                height = math.floor(vim.o.lines * 0.9),
+                                row = math.floor((vim.o.lines - (vim.o.lines * 0.9)) / 2),
+                                col = math.floor((vim.o.columns - (vim.o.columns * 0.9)) / 2),
+                            },
+                            hidden = true,
+                        })
+                        vim.schedule(function()
+                            term:toggle()
+                        end)
+                    end
+                end)
+                return true
+            end,
+        })
+    end, { nargs = 0, desc = "Toggle JQP Terminal with JSON file picker" })
 end
 
 -- Return keymaps for floating terminals
@@ -165,6 +203,8 @@ function M.keymaps()
         { "<leader>tfb", "<cmd>BluetoothTerm<CR>", desc = "Toggle Floating Bluetooth Terminal" },
         { "<leader>tfq", "<cmd>QuillTerm<CR>", desc = "Toggle Floating Quill Terminal" },
         { "<leader>tfa", "<cmd>AzureSearcherTerm<CR>", desc = "Toggle Floating Azure Searcher Terminal" },
+        { "<leader>tfj", "<cmd>JqpTerm<CR>", desc = "Toggle JQP Terminal with JSON file picker" },
+        { "<leader>tj", "<cmd>JqpTerm<CR>", desc = "Toggle JQP Terminal with JSON file picker" },
     }
 end
 
