@@ -1,4 +1,3 @@
-
 setopt prompt_subst;
 
 # --- Zsh Plugin Configuration ---
@@ -25,7 +24,7 @@ source "$HOME/.aliases";
 
 # --- Git Functions for Prompt ---
 git_branch() {
-    local branchName='';
+    local branchName=''
 
     # Check for what branch we’re on.
     # Get the short symbolic ref. If HEAD isn’t a symbolic ref, get a
@@ -40,7 +39,7 @@ git_branch() {
 }
 
 git_status() {
-    local s='';
+    local s=''
 
     # Early exit for Chromium & Blink repo, as the dirty check takes too long.
     # Thanks, @paulirish!
@@ -128,7 +127,9 @@ togglenetskope() {
 function y() {
     local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
     yazi "$@" --cwd-file="$tmp"
-    IFS= read -r -d '' cwd < "$tmp"
+    if [ -f "$tmp" ]; then
+        cwd=$(cat "$tmp")
+    fi
     [ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
     rm -f -- "$tmp"
 }
@@ -163,7 +164,7 @@ ff() {
     selected_relative_path=$(fd --type d . "$search_path" --hidden --exclude .git --exclude node_modules \
         | sed "s|^$search_path/||" \
         | fzf \
-            --preview 'eza --tree --color=always --icons=always --level=2 "$FZF_FF_SEARCH_PATH"/{}' \
+            --preview "eza --tree --color=always --icons=always --level=2 \"$FZF_FF_SEARCH_PATH\"/{}" \
             --preview-window 'right:50%' \
             --height '80%' \
             --border 'rounded' \
@@ -204,7 +205,7 @@ ffn() {
     selected_relative_path=$(fd --type d . "$search_path" --hidden --exclude .git --exclude node_modules \
         | sed "s|^$search_path/||" \
         | fzf \
-            --preview 'eza --tree --color=always --icons=always --level=2 "$FZF_FF_SEARCH_PATH"/{}' \
+            --preview "eza --tree --color=always --icons=always --level=2 \"$FZF_FF_SEARCH_PATH\"/{}" \
             --preview-window 'right:50%' \
             --height '80%' \
             --border 'rounded' \
@@ -245,7 +246,7 @@ fch() {
 
     # Get the entire history list (fc -l 1) and remove the leading history number
     # (e.g., "   123  ls -la" becomes "ls -la") for cleaner fzf display.
-    selected_command=$(
+    selected_command=$( \
         fc -l 1 | \
         sed 's/^[[:space:]]*[0-9]*[[:space:]]*//' | \
         fzf \
@@ -330,7 +331,7 @@ curl() {
         return $curl_exit_code
     fi
     
-    # Check if output is empty
+    # If output is empty, just show headers if any
     if [[ ! -s "$temp_output" ]]; then
         cat "$temp_headers"
         rm -f "$temp_output" "$temp_headers"
@@ -350,7 +351,7 @@ curl() {
     local looks_like_json=false
     
     # Check if it starts with JSON-like characters or is NDJSON
-    if [[ "$first_chars" =~ ^[\{\[] ]] || [[ -n "$(head -1 "$temp_output" | jq . 2>/dev/null)" ]]; then
+    if [[ "$first_chars" =~ ^[\{\[ ]] || [[ -n "$(head -1 "$temp_output" | jq . 2>/dev/null)" ]]; then
         looks_like_json=true
     fi
     
@@ -536,7 +537,7 @@ ffgn() {
     selected_relative_path=$(fd --type d --max-depth 2 . "$search_path" --hidden --exclude .git --exclude node_modules \
         | sed "s|^$search_path/||" \
         | fzf \
-            --preview 'eza --tree --color=always --icons=always --level=2 "$FZF_FFGN_SEARCH_PATH"/{}' \
+            --preview "eza --tree --color=always --icons=always --level=2 \"$FZF_FFGN_SEARCH_PATH\"/{}" \
             --preview-window 'right:50%' \
             --height '80%' \
             --border 'rounded' \
@@ -583,3 +584,41 @@ if [[ ! " ${precmd_functions[@]} " =~ " watn " ]]; then
 fi
 # --- End Warp Terminal Tab Functions ---
 
+# fpr (Fuzzy Pull Request) - Interactively find and open one of your open GitHub PRs.
+fpr() {
+    # Fetch the list of open PRs assigned to you using the gh CLI.
+    # The format argument creates a clean, tab-separated string with relevant info.
+    local pr_list
+    pr_list=$(gh search prs --author "@me" --state open --json repository,number,title,url --template '{{range .items}}{{.repository.nameWithOwner}}\t#{{.number}}\t{{.title}}\t{{.url}}{{"\n"}}{{end}}')
+
+    # Check if the command was successful and if any PRs were returned.
+    if [ -z "$pr_list" ]; then
+        echo "No open pull requests found for you.";
+        return 1;
+    fi
+
+    # Pipe the list of PRs into fzf for interactive selection.
+    # --ansi is used to correctly render any potential colors.
+    # --nth=1,2,3 tells fzf to search within the repo name, PR number, and title.
+    # The selected line is stored in the 'selected_pr' variable.
+    local selected_pr
+    selected_pr=$(echo -e "$pr_list" | fzf \
+        --prompt="Select a Pull Request to open > " \
+        --height="40%" \
+        --border \
+        --ansi \
+        --nth=1,2,3 \
+        --preview 'echo -e "$(echo {} | cut -f 1-3)" | cut -c -$(tput cols)' \
+        --preview-window 'top:1:wrap')
+
+    # If a PR was selected (fzf wasn't cancelled), open its URL in the browser.
+    if [ -n "$selected_pr" ]; then
+        # Extract the URL (the 4th tab-separated field).
+        local pr_url
+        pr_url=$(echo "$selected_pr" | awk -F'\t' '{print $4}')
+        # Open the URL in the default web browser.
+        open "$pr_url";
+    else
+        echo "No pull request selected."
+    fi
+}
