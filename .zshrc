@@ -622,3 +622,36 @@ fpr() {
         echo "No pull request selected."
     fi
 }
+
+# A powerful, interactive Homebrew TUI using fzf and delta
+# Usage: brewf [install|uninstall|info]
+brewf() {
+    # The default action is 'info'
+    local action=${1:-info}
+
+    # CORRECTED: The if/else block now uses the standard 'then' and 'fi' syntax.
+    if [[ "$action" == "install" ]]; then
+        # This part for installing new packages is the same
+        local selection=$(brew search | fzf --height=40% --border=rounded --prompt="Install> ")
+        if [[ -n "$selection" ]]; then
+            brew install "$selection"
+        fi
+    else
+        # This part for acting on INSTALLED packages has been corrected
+        local selection=$(brew list --formula -1 | fzf --height=40% --border=rounded --prompt="Select> " \
+            --preview 'brew info {} | delta' \
+            --preview-window 'right:60%:border-sharp')
+
+        # This logic runs *after* you press Enter in fzf and a selection is made
+        if [[ -n "$selection" ]]; then
+            if [[ "$action" == "info" ]]; then
+                # The info was already in the preview, so we don't need to do anything here.
+                # The function will just exit cleanly after you press Enter.
+                : # The ':' command is a "no-op", which means "do nothing".
+            elif [[ "$action" == "uninstall" ]]; then
+                # If the action was 'uninstall', run the command on the selection.
+                brew uninstall "$selection"
+            fi
+        fi
+    fi
+}
