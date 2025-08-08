@@ -7,6 +7,8 @@ return {
         git_ignored = false, -- Show git ignored files
         custom = {}, -- No custom filters
       },
+      follow_symlinks = true, -- Follow symbolic links
+      show_hidden = true, -- Explicitly show hidden files
     },
     notifier = {
       enabled = true,
