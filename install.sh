@@ -29,15 +29,15 @@ function installDotfiles() {
   cp -R yazi ~/.config/
   echo "   kitty"
   cp -R kitty ~/.config/
-  
+
   # Create necessary directories
   echo "Creating script directories..."
   mkdir -p ~/.local/bin
   mkdir -p ~/GitHub/matthewmyrick/dotfiles/scripts
-  
+
   # Handle scripts directory with new structure
   echo "  scripts"
-  
+
   # Copy Python scripts to ~/.local/bin (if they're executables)
   if [ -d "scripts/python" ] && [ "$(ls -A scripts/python/*.py 2>/dev/null)" ]; then
     echo "    - Python scripts to ~/.local/bin"
@@ -47,7 +47,7 @@ function installDotfiles() {
       fi
     done
   fi
-  
+
   # Copy the entire scripts directory structure for shell modules
   # This preserves the modular organization
   echo "    - Shell modules to ~/GitHub/matthewmyrick/dotfiles/scripts"
@@ -60,7 +60,7 @@ function installDotfiles() {
     echo "      ✓ Copied shell module loader"
     echo "      ✓ Preserved directory structure for lazy loading"
   fi
-  
+
   # Handle telemetry formatter separately if needed
   if [ -f "scripts/python/telemetry.py" ]; then
     echo "    - Telemetry formatter"
@@ -111,16 +111,16 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 
   # Install or upgrade the necessary packages using Homebrew
   echo "Checking and installing/upgrading required packages with Homebrew..."
-  
+
   # List of required packages
   BREW_PACKAGES=(
-    git eza fd fzf yazi 
-    zsh-autosuggestions zsh-syntax-highlighting 
-    bat kubectx k9s zellij neovim 
-    blueutil xmlstarlet golangci-lint 
-    jq ripgrep gh
+    git eza fd fzf yazi
+    zsh-autosuggestions zsh-syntax-highlighting
+    bat kubectx k9s zellij neovim
+    blueutil xmlstarlet golangci-lint
+    jq ripgrep gh taproom
   )
-  
+
   # Install or upgrade each package
   for package in "${BREW_PACKAGES[@]}"; do
     if brew list --formula | grep -q "^${package}$"; then
@@ -131,7 +131,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
       brew install "$package"
     fi
   done
-  
+
   # Handle tap packages separately
   echo "  📦 Checking jqp..."
   if ! brew list --formula | grep -q "^jqp$"; then
@@ -140,22 +140,22 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   else
     echo "    ✓ jqp already installed"
   fi
-  
+
   echo "Homebrew packages ready."
-  
+
   # Install Python packages for shell tools
   echo "Checking Python packages for shell tools..."
-  
+
   # Check if pipx is available (preferred for macOS)
   if ! command -v pipx &>/dev/null; then
     echo "  📦 Installing pipx for Python package management..."
     brew install pipx
     pipx ensurepath
   fi
-  
+
   # Install rich using pipx or pip with break-system-packages
   echo "  📦 Checking rich (Python formatter)..."
-  
+
   # Try to check if rich is available in PATH
   if python3 -c "import rich" 2>/dev/null; then
     echo "    ✓ rich is available"
@@ -165,7 +165,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     if command -v pipx &>/dev/null; then
       pipx install rich-cli 2>/dev/null || true
     fi
-    
+
     # If rich still not available, use pip with break-system-packages flag
     if ! python3 -c "import rich" 2>/dev/null; then
       python3 -m pip install --user --break-system-packages rich 2>/dev/null || {
@@ -174,7 +174,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
       }
     fi
   fi
-  
+
   echo "Python packages ready."
 
   # Fix Go linking if needed
