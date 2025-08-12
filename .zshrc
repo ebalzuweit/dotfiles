@@ -1,5 +1,34 @@
 setopt prompt_subst;
 
+zmodload zsh/zprof
+
+function pzprof() {
+  # === THIS IS THE CORRECTED PART ===
+  # Check if the 'zsh/zprof' key exists in the special 'modules' array.
+  if [[ -z "${modules[zsh/zprof]}" ]]; then
+    echo "Error: zprof module not loaded." >&2
+    echo "Please add 'zmodload zsh/zprof' to the top of your ~/.zshrc" >&2
+    return 1
+  fi
+
+  # The pipeline to format and display the zprof output.
+  zprof | awk '
+    # Skip the "----" separator line.
+    NR==2 { next }
+
+    # For all other lines (header and data)...
+    NR>0 {
+      # Loop through each field and print it, followed by a comma
+      # unless it is the last field on the line.
+      for(i=1; i<=NF; i++) {
+        printf "%s%s", $i, (i==NF ? "" : ",");
+      }
+      # Print a newline character to end the row.
+      printf "\n";
+    }
+  ' | rich --csv --title "Zsh Startup Profile" -
+}
+
 # --- Zsh Plugin Configuration ---
 # Load zsh-syntax-highlighting (provides syntax highlighting as you type)
 [ -f "/opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ] && source "/opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
@@ -655,3 +684,104 @@ brewf() {
         fi
     fi
 }
+
+# ------------------------------------------------------------------------------
+# AUTOMATED TELEMETRY FOR PYTHON & GO
+#
+# This system automatically profiles python and go commands and provides
+# beautiful reports.
+#
+# Usage:
+#   python my_script.py   # Runs as normal, but captures metrics.
+#   lrp                   # Shows the last python run's report.
+#
+#   go run main.go        # Runs as normal, but captures metrics.
+#   lrg                   # Shows the last go run's report.
+# ------------------------------------------------------------------------------
+
+# --- Central Telemetry Wrapper ---
+# This internal function is the core logic for capturing data.
+function _run_and_monitor() {
+  local language="$1"
+  local log_file="$2"
+  shift 2 # Remove language and log_file from arguments
+  local command_to_run=("$@")
+  local formatter_script="$HOME/.config/telemetry/python/telemetry.py"
+
+  # Determine the OS for the time command flag
+  local time_flag
+  if [[ "$(uname)" == "Darwin" ]]; then
+    time_flag="-l"
+  else
+    time_flag="-v"
+  fi
+
+  # --- Data Capture ---
+  # The magic happens here. We run the command, redirecting the output of
+  # 'time' (stderr) to a temporary file.
+  {
+    /usr/bin/time "$time_flag" "$@"
+  } &> "$log_file"
+
+  # Append a separator for parsing
+  echo "\n---PROFILER DATA---" >> "$log_file"
+}
+
+# --- Python Wrapper ---
+function python() {
+  local log_file="/tmp/python_telemetry.log"
+  local profile_file="/tmp/python_profile.prof"
+  local command_to_run=("python" "$@")
+
+  # Run the python script with cProfile to get function-level data
+  _run_and_monitor "Python" "$log_file" python -m cProfile -o "$profile_file" "$@"
+
+  # Append the readable profile data to the log
+  python -m pstats "$profile_file" |& sed -n '/function calls/,/Ordered by:/p' >> "$log_file"
+
+  # Display the final report
+  python "$HOME/.config/zsh/scripts/telemetry_formatter.py" "$log_file" "$(uname)" "Python" "$command_to_run"
+}
+
+# --- Go Wrapper ---
+# Note: Go profiling is more complex and best done on compiled binaries.
+# This wrapper provides basic timing. Per-function profiling for 'go run'
+# is non-trivial and omitted for simplicity in this wrapper.
+# function go() {
+#   local log_file="/tmp/go_telemetry.log"
+#   local command_to_run=("go" "$@")
+#
+#   _run_and_monitor "Go" "$log_file" go "$@"
+#
+#   # For Go, we don't have simple per-function data from 'go run'.
+#   # We append a placeholder.
+#   echo "Per-function profiling for 'go run' is not supported by this script." >> "$log_file"
+#
+#   # Display the final report
+#   python "$HOME/.config/zsh/scripts/telemetry_formatter.py" "$log_file" "$(uname)" "Go" "$command_to_run"
+# }
+#
+# # --- Report Viewer Functions ---
+function lrp() {
+  local log_file="/tmp/python_telemetry.log"
+  if [[ ! -f "$log_file" ]]; then
+    echo "No Python run log found. Run a python script first."
+    return 1
+  fi
+  # We need to extract the original command from the log file to pass it
+  local last_command=$(head -n 1 "$log_file" | sed 's/Command: //')
+  python "$HOME/.config/zsh/scripts/telemetry_formatter.py" "$log_file" "$(uname)" "Python" "$last_command"
+}
+
+function lrg() {
+  local log_file="/tmp/go_telemetry.log"
+  if [[ ! -f "$log_file" ]]; then
+    echo "No Go run log found. Run a 'go run' command first."
+    return 1
+  fi
+  local last_command=$(head -n 1 "$log_file" | sed 's/Command: //')
+  python "$HOME/.config/zsh/scripts/telemetry_formatter.py" "$log_file" "$(uname)" "Go" "$last_command"
+}
+### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
+export PATH="/Users/z954179/.rd/bin:$PATH"
+### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)

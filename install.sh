@@ -22,12 +22,10 @@ function installDotfiles() {
   cp .vimrc ~
   echo "  nvim"
   cp -R nvim ~/.config/
-  echo "  helix"
-  cp -R helix ~/.config/
   echo "  yazi"
   cp -R yazi ~/.config/
-  echo "  zellij"
-  cp -R zellij ~/.config/
+  echo "   kitty"
+  cp -R kitty ~/.config/
   echo "  scripts"
   cp scripts/* ~/.local/bin/
 
