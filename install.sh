@@ -5,6 +5,9 @@
 function installDotfiles() {
   echo "Installing:"
 
+  # Get the directory where this script is located
+  DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
   # copy files to home
   echo "  .aliases"
   cp .aliases ~
@@ -26,13 +29,56 @@ function installDotfiles() {
   cp -R yazi ~/.config/
   echo "   kitty"
   cp -R kitty ~/.config/
+  
+  # Create necessary directories
+  echo "Creating script directories..."
+  mkdir -p ~/.local/bin
+  mkdir -p ~/GitHub/matthewmyrick/dotfiles/scripts
+  
+  # Handle scripts directory with new structure
   echo "  scripts"
-  cp scripts/* ~/.local/bin/
+  
+  # Copy Python scripts to ~/.local/bin (if they're executables)
+  if [ -d "scripts/python" ] && [ "$(ls -A scripts/python/*.py 2>/dev/null)" ]; then
+    echo "    - Python scripts to ~/.local/bin"
+    for script in scripts/python/*.py; do
+      if [ -f "$script" ] && [ -x "$script" ]; then
+        cp "$script" ~/.local/bin/
+      fi
+    done
+  fi
+  
+  # Copy the entire scripts directory structure for shell modules
+  # This preserves the modular organization
+  echo "    - Shell modules to ~/GitHub/matthewmyrick/dotfiles/scripts"
+  if [ -d "scripts" ]; then
+    # Ensure the destination exists
+    mkdir -p ~/GitHub/matthewmyrick/dotfiles
+    # Copy the entire scripts directory structure
+    cp -R scripts ~/GitHub/matthewmyrick/dotfiles/
+    echo "      ✓ Copied modular shell functions"
+    echo "      ✓ Copied shell module loader"
+    echo "      ✓ Preserved directory structure for lazy loading"
+  fi
+  
+  # Handle telemetry formatter separately if needed
+  if [ -f "scripts/python/telemetry.py" ]; then
+    echo "    - Telemetry formatter"
+    mkdir -p ~/.config/zsh/scripts
+    cp scripts/python/telemetry.py ~/.config/zsh/scripts/telemetry_formatter.py
+  fi
 
   echo "  .gitconfig - Automatic installation not supported at this time."
 
   echo ""
   echo "dotfiles have been updated successfully!"
+  echo ""
+  echo "ℹ️  Shell Module System:"
+  echo "  - Modular functions installed to ~/GitHub/matthewmyrick/dotfiles/scripts/shell/"
+  echo "  - Functions use lazy loading for optimal performance"
+  echo "  - Run 'shell_modules' to see available modules"
+  echo "  - Run 'shell_loaded' to see what's currently loaded"
+  echo ""
   echo "Please restart your shell or source the appropriate file:"
   echo "- ~/.bash_profile"
   echo "- ~/.zshrc"
@@ -63,10 +109,73 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   # Check and install Homebrew
   install_homebrew
 
-  # Install the necessary packages using Homebrew
-  echo "Installing required packages with Homebrew..."
-  brew install git eza fd fzf yazi zsh-autosuggestions zsh-syntax-highlighting bat kubectx k9s zellij neovim blueutil xmlstarlet golangci-lint jq noahgorstein/tap/jqp
-  echo "Homebrew packages installed."
+  # Install or upgrade the necessary packages using Homebrew
+  echo "Checking and installing/upgrading required packages with Homebrew..."
+  
+  # List of required packages
+  BREW_PACKAGES=(
+    git eza fd fzf yazi 
+    zsh-autosuggestions zsh-syntax-highlighting 
+    bat kubectx k9s zellij neovim 
+    blueutil xmlstarlet golangci-lint 
+    jq ripgrep gh
+  )
+  
+  # Install or upgrade each package
+  for package in "${BREW_PACKAGES[@]}"; do
+    if brew list --formula | grep -q "^${package}$"; then
+      echo "  📦 ${package} already installed, checking for updates..."
+      brew upgrade "$package" 2>/dev/null || echo "    ✓ ${package} is up to date"
+    else
+      echo "  📦 Installing ${package}..."
+      brew install "$package"
+    fi
+  done
+  
+  # Handle tap packages separately
+  echo "  📦 Checking jqp..."
+  if ! brew list --formula | grep -q "^jqp$"; then
+    echo "    Installing jqp from tap..."
+    brew install noahgorstein/tap/jqp
+  else
+    echo "    ✓ jqp already installed"
+  fi
+  
+  echo "Homebrew packages ready."
+  
+  # Install Python packages for shell tools
+  echo "Checking Python packages for shell tools..."
+  
+  # Check if pipx is available (preferred for macOS)
+  if ! command -v pipx &>/dev/null; then
+    echo "  📦 Installing pipx for Python package management..."
+    brew install pipx
+    pipx ensurepath
+  fi
+  
+  # Install rich using pipx or pip with break-system-packages
+  echo "  📦 Checking rich (Python formatter)..."
+  
+  # Try to check if rich is available in PATH
+  if python3 -c "import rich" 2>/dev/null; then
+    echo "    ✓ rich is available"
+  else
+    echo "    Installing rich..."
+    # Try pipx first (preferred)
+    if command -v pipx &>/dev/null; then
+      pipx install rich-cli 2>/dev/null || true
+    fi
+    
+    # If rich still not available, use pip with break-system-packages flag
+    if ! python3 -c "import rich" 2>/dev/null; then
+      python3 -m pip install --user --break-system-packages rich 2>/dev/null || {
+        echo "    ⚠️  Could not install rich automatically"
+        echo "    Try: python3 -m pip install --user --break-system-packages rich"
+      }
+    fi
+  fi
+  
+  echo "Python packages ready."
 
   # Fix Go linking if needed
   if ! brew list go &>/dev/null; then
