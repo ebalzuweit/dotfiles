@@ -1,0 +1,54 @@
+#!/bin/bash
+
+set -e
+
+case "$1" in
+    "init")
+        # Check if current directory is a git repository
+        if [ ! -d ".git" ]; then
+            echo "Error: Current directory is not a git repository"
+            exit 1
+        fi
+        
+        # Create .git/info directory if it doesn't exist
+        mkdir -p ".git/info"
+        
+        # Add .runfile to .git/info/exclude if not already present
+        if [ ! -f ".git/info/exclude" ] || ! grep -q "^\.runfile$" ".git/info/exclude" 2>/dev/null; then
+            echo ".runfile" >> ".git/info/exclude"
+            echo "Added .runfile to .git/info/exclude"
+        fi
+    
+        # Create .runfile if it doesn't exist
+        if [ ! -f ".runfile" ]; then
+            touch ".runfile"
+            echo "Created .runfile"
+        fi
+        ;;
+    *)
+        # Check if .runfile exists
+        if [ ! -f ".runfile" ]; then
+            echo "Error: .runfile not found"
+            exit 1
+        fi
+        
+        # Parse .runfile for the command, ignoring empty lines and comments
+        command_line=$(grep -v "^$\|^#\|^--\|^//" ".runfile" 2>/dev/null | grep "^$1=" | head -n1)
+        
+        if [ -z "$command_line" ]; then
+            echo "Error: Command '$1' not found in .runfile"
+            exit 1
+        fi
+        
+        # Extract command after the = sign
+        command_to_run="${command_line#*=}"
+        
+        if [ -z "$command_to_run" ]; then
+            echo "Error: No command specified for '$1'"
+            exit 1
+        fi
+        
+        # Execute the command
+        eval "$command_to_run"
+        ;;
+esac
