@@ -32,16 +32,10 @@ load_shell_modules() {
 load_shell_modules
 
 # --- CONDITIONAL LOADING: Terminal-specific features ---
-if [[ "$TERM_PROGRAM" == "WarpTerminal" ]]; then
-    # Warp terminal functions are already loaded above
-    # Add the auto function to precmd_functions for automatic updates
-    if [[ ! " ${precmd_functions[@]} " =~ " watn " ]]; then
-        precmd_functions+=(watn)
-    fi
-else
-    # Create stub functions that do nothing if not in Warp
-    wtn() { : }
-    watn() { : }
+# Terminal tab functions work with multiple terminals (Kitty, Warp, etc.)
+# Add the auto function to precmd_functions for automatic updates
+if [[ ! " ${precmd_functions[@]} " =~ " tatn " ]]; then
+    precmd_functions+=(tatn)
 fi
 
 # --- MODULE MANAGEMENT FUNCTIONS ---
@@ -77,7 +71,7 @@ shell_loaded() {
     command -v ghc >/dev/null && echo "  ✓ git/functions (ghc, ffgn, fpr, git_branch, git_status)"
     command -v ff >/dev/null && echo "  ✓ navigation/finders (ff, ffn, fch, y)"
     command -v togglenetskope >/dev/null && echo "  ✓ utilities/general (togglenetskope, r_xml, k_port, brewf)"
-    command -v wtn >/dev/null && echo "  ✓ utilities/warp (wtn, watn)"
+    command -v ttn >/dev/null && echo "  ✓ utilities/terminal-tabs (ttn, tatn)"
     command -v add_req >/dev/null && echo "  ✓ network/api (add_req, curl_with_jqp)"
     
     echo ""

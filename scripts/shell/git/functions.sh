@@ -94,8 +94,8 @@ ffgn() {
         local full_path="$search_path/$selected_relative_path"
         # Open the selected directory in Neovim.
         cd "$full_path"
-        # Set the Warp terminal tab name to the repository name
-        command -v wtn &>/dev/null && wtn
+        # Set the terminal tab name to the repository name
+        command -v ttn &>/dev/null && ttn
         nvim .
     fi
 }
