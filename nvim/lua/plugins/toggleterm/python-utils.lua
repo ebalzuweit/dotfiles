@@ -1,46 +1,60 @@
 -- Python virtual environment utilities for toggleterm
 local M = {}
 
--- Function to find virtual environment in current directory and parents
-function M.find_venv()
-    local cwd = vim.fn.getcwd()
-    local venv_paths = {}
+-- Function to recursively find all virtual environments in a directory
+local function find_venv_recursive(dir, base_dir, venv_paths, depth)
+    if depth > 10 then return end -- Limit recursion depth
     
-    -- Common virtual environment directory names
-    local venv_names = {
-        "venv",
-        ".venv", 
-        "env",
-        ".env",
-        "virtualenv",
-        ".virtualenv"
-    }
+    local handle = vim.loop.fs_scandir(dir)
+    if not handle then return end
     
-    -- Search in current directory and parent directories
-    local search_dir = cwd
-    for _ = 1, 5 do -- Limit search to 5 levels up
-        for _, venv_name in ipairs(venv_names) do
-            local venv_path = search_dir .. "/" .. venv_name
-            local activate_script = venv_path .. "/bin/activate"
+    while true do
+        local name, type = vim.loop.fs_scandir_next(handle)
+        if not name then break end
+        
+        -- Skip hidden directories (except .venv), node_modules, and other common non-venv dirs
+        if type == "directory" and name ~= "node_modules" and name ~= "__pycache__" and name ~= ".git" then
+            if name ~= ".venv" and name:sub(1, 1) == "." then
+                -- Skip other hidden directories
+                goto continue
+            end
             
-            -- Check if virtual environment exists
-            if vim.fn.isdirectory(venv_path) == 1 and vim.fn.filereadable(activate_script) == 1 then
+            local full_path = dir .. "/" .. name
+            local activate_script = full_path .. "/bin/activate"
+            local pyvenv_cfg = full_path .. "/pyvenv.cfg"
+            
+            -- Check if this is a virtual environment
+            if vim.fn.filereadable(activate_script) == 1 or vim.fn.filereadable(pyvenv_cfg) == 1 then
+                -- Calculate relative path from base directory
+                local relative_path = vim.fn.fnamemodify(full_path, ":~:.")
+                if base_dir and base_dir ~= "" then
+                    relative_path = full_path:gsub("^" .. vim.pesc(base_dir) .. "/", "")
+                end
+                
                 table.insert(venv_paths, {
-                    name = venv_name,
-                    path = venv_path,
+                    name = name,
+                    path = full_path,
                     activate_script = activate_script,
-                    level = string.rep("../", vim.tbl_count(vim.split(vim.fn.fnamemodify(search_dir, ":~:."), "/", { plain = true })) - vim.tbl_count(vim.split(vim.fn.fnamemodify(cwd, ":~:."), "/", { plain = true })))
+                    relative_path = relative_path,
+                    parent_dir = dir
                 })
+            else
+                -- Recursively search subdirectories
+                find_venv_recursive(full_path, base_dir, venv_paths, depth + 1)
             end
         end
         
-        -- Move up one directory
-        local parent = vim.fn.fnamemodify(search_dir, ":h")
-        if parent == search_dir then
-            break -- Reached root
-        end
-        search_dir = parent
+        ::continue::
     end
+end
+
+-- Function to find ALL virtual environments in the repository
+function M.find_all_venvs()
+    local cwd = vim.fn.getcwd()
+    local venv_paths = {}
+    
+    -- Find all venvs recursively from current directory
+    find_venv_recursive(cwd, cwd, venv_paths, 0)
     
     return venv_paths
 end
@@ -94,36 +108,174 @@ function M.is_python_name(name)
     return false
 end
 
--- Function to show venv selection menu if multiple found
-function M.select_venv(venv_list, callback)
+-- Function to detect if a name suggests Go environment
+function M.is_go_name(name)
+    if not name or name == "" then
+        return false
+    end
+    
+    local go_indicators = {
+        "go",
+        "golang",
+        "gopher"
+    }
+    
+    local lower_name = string.lower(name)
+    for _, indicator in ipairs(go_indicators) do
+        if lower_name == indicator then
+            return true
+        end
+    end
+    
+    return false
+end
+
+-- Function to recursively find all go.mod files in a directory
+local function find_go_mod_recursive(dir, base_dir, go_mod_paths, depth)
+    if depth > 10 then return end -- Limit recursion depth
+    
+    local handle = vim.loop.fs_scandir(dir)
+    if not handle then return end
+    
+    while true do
+        local name, type = vim.loop.fs_scandir_next(handle)
+        if not name then break end
+        
+        if name == "go.mod" and type == "file" then
+            -- Calculate relative path from base directory
+            local relative_path = vim.fn.fnamemodify(dir, ":~:.")
+            if base_dir and base_dir ~= "" then
+                relative_path = dir:gsub("^" .. vim.pesc(base_dir) .. "/", "")
+            end
+            
+            table.insert(go_mod_paths, {
+                name = "go.mod",
+                path = dir .. "/go.mod",
+                directory = dir,
+                relative_path = relative_path == "." and "./" or relative_path
+            })
+        elseif type == "directory" and name ~= "node_modules" and name ~= ".git" and name ~= "vendor" then
+            -- Skip hidden directories and common non-Go dirs
+            if name:sub(1, 1) ~= "." then
+                find_go_mod_recursive(dir .. "/" .. name, base_dir, go_mod_paths, depth + 1)
+            end
+        end
+    end
+end
+
+-- Function to find ALL go.mod files in the repository
+function M.find_all_go_mods()
+    local cwd = vim.fn.getcwd()
+    local go_mod_paths = {}
+    
+    -- Find all go.mod files recursively from current directory
+    find_go_mod_recursive(cwd, cwd, go_mod_paths, 0)
+    
+    return go_mod_paths
+end
+
+-- Function to show go.mod selection with telescope fuzzy finder
+function M.select_go_mod_with_telescope(go_mod_list, callback)
+    if #go_mod_list == 0 then
+        vim.notify("No go.mod files found in this repository", vim.log.levels.WARN)
+        callback(nil)
+        return
+    elseif #go_mod_list == 1 then
+        -- Only one go.mod found, use it and notify
+        vim.notify("Defaulting to: " .. go_mod_list[1].relative_path, vim.log.levels.INFO)
+        callback(go_mod_list[1])
+        return
+    end
+    
+    -- Multiple go.mod files found, use telescope for selection
+    local pickers = require("telescope.pickers")
+    local finders = require("telescope.finders")
+    local conf = require("telescope.config").values
+    local actions = require("telescope.actions")
+    local action_state = require("telescope.actions.state")
+    
+    -- Add a "None" option
+    local items = vim.deepcopy(go_mod_list)
+    table.insert(items, { name = "None", relative_path = "No Go module", directory = nil })
+    
+    pickers.new({}, {
+        prompt_title = "Select Go Module",
+        finder = finders.new_table({
+            results = items,
+            entry_maker = function(entry)
+                return {
+                    value = entry,
+                    display = entry.relative_path or entry.name,
+                    ordinal = entry.relative_path or entry.name,
+                }
+            end,
+        }),
+        sorter = conf.generic_sorter({}),
+        attach_mappings = function(prompt_bufnr, map)
+            actions.select_default:replace(function()
+                actions.close(prompt_bufnr)
+                local selection = action_state.get_selected_entry()
+                if selection and selection.value.directory then
+                    callback(selection.value)
+                else
+                    callback(nil)
+                end
+            end)
+            return true
+        end,
+    }):find()
+end
+
+-- Function to show venv selection with telescope fuzzy finder
+function M.select_venv_with_telescope(venv_list, callback)
     if #venv_list == 0 then
+        vim.notify("No Python virtual environments found in this repository", vim.log.levels.WARN)
         callback(nil)
         return
     elseif #venv_list == 1 then
+        -- Only one venv found, use it and notify
+        vim.notify("Defaulting to: " .. venv_list[1].relative_path, vim.log.levels.INFO)
         callback(venv_list[1])
         return
     end
     
-    -- Create selection menu
-    local items = {}
-    for i, venv in ipairs(venv_list) do
-        local display_path = venv.level ~= "" and (venv.level .. venv.name) or venv.name
-        table.insert(items, string.format("%d. %s (%s)", i, venv.name, display_path))
-    end
-    table.insert(items, string.format("%d. None (no virtual environment)", #venv_list + 1))
+    -- Multiple venvs found, use telescope for selection
+    local pickers = require("telescope.pickers")
+    local finders = require("telescope.finders")
+    local conf = require("telescope.config").values
+    local actions = require("telescope.actions")
+    local action_state = require("telescope.actions.state")
     
-    vim.ui.select(items, {
-        prompt = "Select Python virtual environment:",
-        format_item = function(item)
-            return item
+    -- Add a "None" option
+    local items = vim.deepcopy(venv_list)
+    table.insert(items, { name = "None", relative_path = "No virtual environment", path = nil })
+    
+    pickers.new({}, {
+        prompt_title = "Select Python Virtual Environment",
+        finder = finders.new_table({
+            results = items,
+            entry_maker = function(entry)
+                return {
+                    value = entry,
+                    display = entry.relative_path or entry.name,
+                    ordinal = entry.relative_path or entry.name,
+                }
+            end,
+        }),
+        sorter = conf.generic_sorter({}),
+        attach_mappings = function(prompt_bufnr, map)
+            actions.select_default:replace(function()
+                actions.close(prompt_bufnr)
+                local selection = action_state.get_selected_entry()
+                if selection and selection.value.path then
+                    callback(selection.value)
+                else
+                    callback(nil)
+                end
+            end)
+            return true
         end,
-    }, function(choice, idx)
-        if not choice or idx == #items then
-            callback(nil)
-        else
-            callback(venv_list[idx])
-        end
-    end)
+    }):find()
 end
 
 return M

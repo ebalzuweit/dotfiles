@@ -103,39 +103,77 @@ function M.setup()
         end)
     end, { nargs = 0, desc = "Open Azure Searcher in Current Buffer" })
 
-    -- Python Buffer Terminal with automatic venv detection
-    vim.api.nvim_create_user_command("PythonBufferTerm", function()
-        local python_utils = require("plugins.toggleterm.python-utils")
-        local venv_list = python_utils.find_venv()
-        
-        if #venv_list > 0 then
-            python_utils.select_venv(venv_list, function(selected_venv)
-                local terminal_cmd
-                local terminal_name
-                if selected_venv then
-                    terminal_cmd = python_utils.create_python_terminal_cmd(selected_venv)
-                    terminal_name = "python (" .. selected_venv.name .. ")"
-                    vim.notify("Activating virtual environment: " .. selected_venv.name, vim.log.levels.INFO)
-                else
-                    terminal_cmd = vim.o.shell
-                    terminal_name = "python"
-                end
+    -- Enhanced Buffer Terminal with Python venv detection (replaces BufferTerm for <leader>tt)
+    vim.api.nvim_create_user_command("EnhancedBufferTerm", function()
+        -- Prompt for terminal name first
+        vim.ui.input({
+            prompt = "Terminal name (empty for default): ",
+            default = "",
+        }, function(name)
+            if name == nil then return end -- User cancelled with Escape
+            
+            -- If name is empty, default to "terminal"
+            if name == "" then
+                name = "terminal"
+            end
+            
+            -- Check if this is a Python or Go related terminal
+            local python_utils = require("plugins.toggleterm.python-utils")
+            local is_python = python_utils.is_python_name(name)
+            local is_go = python_utils.is_go_name(name)
+            
+            if is_python then
+                -- Look for virtual environments using enhanced detection
+                local venv_list = python_utils.find_all_venvs()
                 
-                -- Create terminal with custom command
-                vim.cmd("terminal " .. terminal_cmd)
-                vim.schedule(function()
-                    set_terminal_name(terminal_name)
+                python_utils.select_venv_with_telescope(venv_list, function(selected_venv)
+                    local terminal_cmd
+                    if selected_venv then
+                        terminal_cmd = python_utils.create_python_terminal_cmd(selected_venv)
+                    else
+                        terminal_cmd = vim.o.shell
+                    end
+                    
+                    -- Always open in a new buffer
+                    vim.cmd("enew")
+                    vim.cmd("terminal " .. terminal_cmd)
+                    vim.schedule(function()
+                        set_terminal_name(name)
+                        -- CD to venv directory if selected
+                        if selected_venv then
+                            local venv_dir = vim.fn.fnamemodify(selected_venv.path, ":h")
+                            vim.api.nvim_chan_send(vim.b.terminal_job_id, "cd " .. vim.fn.shellescape(venv_dir) .. "\r")
+                        end
+                    end)
                 end)
-            end)
-        else
-            -- No venv found, create regular Python terminal
-            vim.notify("No virtual environment found, using default shell", vim.log.levels.INFO)
-            vim.cmd("terminal")
-            vim.schedule(function()
-                set_terminal_name("python")
-            end)
-        end
-    end, { nargs = 0, desc = "Open Python Terminal with venv detection" })
+            elseif is_go then
+                -- Look for go.mod files using enhanced detection
+                local go_mod_list = python_utils.find_all_go_mods()
+                
+                python_utils.select_go_mod_with_telescope(go_mod_list, function(selected_go_mod)
+                    -- Always open in a new buffer
+                    vim.cmd("enew")
+                    vim.cmd("terminal")
+                    vim.schedule(function()
+                        set_terminal_name(name)
+                        if selected_go_mod then
+                            -- CD to go.mod directory and run go mod tidy
+                            vim.api.nvim_chan_send(vim.b.terminal_job_id, "cd " .. vim.fn.shellescape(selected_go_mod.directory) .. "\r")
+                            vim.api.nvim_chan_send(vim.b.terminal_job_id, "go mod tidy\r")
+                        end
+                    end)
+                end)
+            else
+                -- Not a Python or Go terminal, proceed normally
+                vim.cmd("enew")
+                vim.cmd("terminal")
+                vim.schedule(function()
+                    set_terminal_name(name)
+                end)
+            end
+        end)
+    end, { nargs = 0, desc = "Open Enhanced Terminal with Python venv support" })
+
 
     -- General Buffer Terminal with Python venv detection
     vim.api.nvim_create_user_command("BufferTerm", function()
@@ -147,33 +185,23 @@ function M.setup()
         local is_python = python_utils.is_python_name(name)
         
         if is_python then
-            -- Look for virtual environments
-            local venv_list = python_utils.find_venv()
+            -- Look for virtual environments using enhanced detection
+            local venv_list = python_utils.find_all_venvs()
             
-            if #venv_list > 0 then
-                python_utils.select_venv(venv_list, function(selected_venv)
-                    local terminal_cmd
-                    if selected_venv then
-                        terminal_cmd = python_utils.create_python_terminal_cmd(selected_venv)
-                        vim.notify("Activating virtual environment: " .. selected_venv.name, vim.log.levels.INFO)
-                    else
-                        terminal_cmd = vim.o.shell
-                    end
-                    
-                    -- Create terminal with custom command
-                    vim.cmd("terminal " .. terminal_cmd)
-                    vim.schedule(function()
-                        set_terminal_name(name)
-                    end)
-                end)
-            else
-                -- No venv found, proceed with normal terminal
-                vim.notify("No virtual environment found, using default shell", vim.log.levels.INFO)
-                vim.cmd("terminal")
+            python_utils.select_venv_with_telescope(venv_list, function(selected_venv)
+                local terminal_cmd
+                if selected_venv then
+                    terminal_cmd = python_utils.create_python_terminal_cmd(selected_venv)
+                else
+                    terminal_cmd = vim.o.shell
+                end
+                
+                -- Create terminal with custom command
+                vim.cmd("terminal " .. terminal_cmd)
                 vim.schedule(function()
                     set_terminal_name(name)
                 end)
-            end
+            end)
         else
             -- Not a Python terminal, proceed normally
             vim.cmd("terminal")
@@ -208,8 +236,7 @@ end
 -- Return keymaps for buffer terminals
 function M.keymaps()
     return {
-        { "<leader>tt", "<cmd>BufferTerm<CR>", desc = "Open Terminal in Current Buffer" },
-        { "<leader>tp", "<cmd>PythonBufferTerm<CR>", desc = "Open Python Terminal with venv detection" },
+        { "<leader>tt", "<cmd>EnhancedBufferTerm<CR>", desc = "Terminal (with Python/Go support)" },
         { "<leader>tc", "<cmd>ClaudeBufferTerm<CR>", desc = "Open Claude in Current Buffer" },
         { "<leader>tg", "<cmd>GeminiBufferTerm<CR>", desc = "Open Gemini in Current Buffer" },
         { "<leader>tq", "<cmd>QuillBufferTerm<CR>", desc = "Open Quill in Current Buffer" },
