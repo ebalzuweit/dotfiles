@@ -315,30 +315,34 @@ ghpr() {
     return 1
   fi
 
-  # --- 6. Interactive PR Selection with fzf and fixed-width colors ---
-  # Use columns 1-3 for searching (number, title, author) but extract the PR number from column 4
+  # --- 6. Interactive PR Selection with fzf and enhanced metadata display ---
   selected_pr=$(echo "$pr_list" | awk -F'\t' '{
     pr_num = $1; if (length(pr_num) > 8) pr_num = substr(pr_num, 1, 5) "...";
-    title = $2; if (length(title) > 45) title = substr(title, 1, 42) "...";
-    author = $3; if (length(author) > 15) author = substr(author, 1, 12) "...";
-    printf "\033[36m%-8s\033[0m \033[35m%-45s\033[0m \033[33m%-15s\033[0m %s\n", pr_num, title, author, $4
+    title = $2; if (length(title) > 35) title = substr(title, 1, 32) "...";
+    author = $3; if (length(author) > 12) author = substr(author, 1, 9) "...";
+    state = $4;
+    created = $5; 
+    # Format date to show just the date part (YYYY-MM-DD)
+    split(created, date_parts, "T");
+    created_date = date_parts[1];
+    printf "\033[36m%-8s\033[0m \033[35m%-35s\033[0m \033[33m%-12s\033[0m \033[32m%-8s\033[0m \033[37m%-12s\033[0m %s\n", pr_num, title, author, state, created_date, $7
   }' | fzf \
     --prompt="Select a PR from '$full_repo' > " \
-    --height="50%" \
+    --height="60%" \
     --border \
     --ansi \
     --delimiter=' ' \
-    --nth=1,2,3 \
-    --with-nth=1,2,3 \
-    --header="PR #     TITLE                                        AUTHOR         " \
-    --preview 'gh pr view {4} --repo '"$full_repo"' || echo "Could not load PR details"' \
+    --nth=1,2,3,4,5 \
+    --with-nth=1,2,3,4,5 \
+    --header="PR #     TITLE                              AUTHOR      STATE    CREATED     " \
+    --preview 'gh pr view {6} --repo '"$full_repo"' || echo "Could not load PR details"' \
     --preview-window 'right:40%')
 
   # --- 7. Open the Pull Request ---
   if [ -n "$selected_pr" ]; then
-    # Extract the PR number (4th column)
+    # Extract the PR number (7th column)
     local pr_number
-    pr_number=$(echo "$selected_pr" | awk -F'\t' '{print $4}')
+    pr_number=$(echo "$selected_pr" | awk '{print $6}')
     
     echo "Opening PR #$pr_number in browser..."
     gh pr view "$pr_number" --repo "$full_repo" --web
