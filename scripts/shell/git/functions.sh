@@ -316,10 +316,16 @@ ghpra() {
 
   # --- 2. Parse Input ---
   # Check if input is a URL or just a number
-  if [[ "$input" =~ ^https://github\.com/([^/]+/[^/]+)/pull/([0-9]+) ]]; then
-    # It's a full URL
-    pr_repo="${BASH_REMATCH[1]}"
-    pr_number="${BASH_REMATCH[2]}"
+  if [[ "$input" =~ ^https://github\.com/.+/pull/[0-9]+.*$ ]]; then
+    # It's a full URL - extract repo and PR number using sed
+    pr_repo=$(echo "$input" | sed -E 's|https://github\.com/([^/]+/[^/]+)/pull/([0-9]+).*|\1|')
+    pr_number=$(echo "$input" | sed -E 's|https://github\.com/([^/]+/[^/]+)/pull/([0-9]+).*|\2|')
+    
+    # Validate extraction worked
+    if [ -z "$pr_repo" ] || [ -z "$pr_number" ]; then
+      echo "Error: Failed to parse GitHub URL: $input"
+      return 1
+    fi
   elif [[ "$input" =~ ^[0-9]+$ ]]; then
     # It's just a PR number
     if [ -z "$repo" ]; then
@@ -331,6 +337,7 @@ ghpra() {
     pr_repo="$repo"
   else
     echo "Error: Invalid input format. Provide either a GitHub PR URL or PR number with repo."
+    echo "Debug: input was '$input'"
     return 1
   fi
 
