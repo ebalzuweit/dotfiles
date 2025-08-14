@@ -116,7 +116,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   BREW_PACKAGES=(
     git eza fd fzf yazi
     zsh-autosuggestions zsh-syntax-highlighting
-    bat kubectx k9s zellij neovim
+    bat kubectx k9s neovim
     blueutil xmlstarlet golangci-lint
     jq ripgrep gh taproom
   )

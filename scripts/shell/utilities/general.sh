@@ -132,6 +132,8 @@ help() {
     echo "  ff            - Fuzzy find directories (context-aware: git repo or home)"
     echo "  ffn           - Fuzzy find & open in Neovim"
     echo "  ffgn          - Fuzzy find GitHub repos & open in Neovim"
+    echo "  fft           - Fuzzy find Terraform dirs & run terraform init + plan"
+    echo "  fftg          - Fuzzy find Terragrunt dirs & run terragrunt plan"
     echo "  fch           - Fuzzy search command history & execute"
     echo "  y             - Yazi file manager with directory change on exit"
     echo ""
@@ -203,7 +205,6 @@ help() {
     
     echo "🐳 CONTAINERS"
     echo "  dd            - Launch lazydocker"
-    echo "  zj            - Launch zellij"
     echo ""
     
     echo "ℹ️  SHELL MANAGEMENT"

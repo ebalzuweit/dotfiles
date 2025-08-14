@@ -91,9 +91,6 @@ ffn() {
         # Get the name of the current directory to use as the session name.
         # We replace periods with underscores as they can be problematic in session names.
         local session_name=$(basename "$PWD" | tr '.' '_')
-        # Launch Zellij, creating a new session named after the directory,
-        # and have it immediately start nvim in the current path.
-        # zellij --session "$session_name" -- nvim .
         nvim .
     fi
 }
@@ -137,6 +134,130 @@ fch() {
         # Execute the selected command.
         # 'eval' is necessary to run the string as a shell command.
         eval "$selected_command"
+    fi
+}
+
+# fft (Fuzzy Find Terraform) - Find directories containing .tf files and run terraform plan
+# Usage: Type 'fft' in your terminal and press Enter.
+fft() {
+    # Attempt to find the root of the current git repository. 
+    local git_root
+    git_root=$(git rev-parse --show-toplevel 2>/dev/null)
+    
+    local search_path
+    # Check if we are inside a git repository.
+    if [[ -n "$git_root" ]]; then
+        # If yes, set the search path to the project's root directory.
+        search_path="$git_root"
+    else
+        # If no, fall back to searching from the home directory.
+        search_path="$HOME"
+    fi
+
+    # Find directories that contain .tf files
+    local tf_dirs
+    tf_dirs=$(find "$search_path" -name "*.tf" -type f -exec dirname {} \; 2>/dev/null | sort -u)
+    
+    # Check if any Terraform directories were found
+    if [[ -z "$tf_dirs" ]]; then
+        echo "No directories with .tf files found in $search_path"
+        return 1
+    fi
+    
+    # We need to export the search_path so the fzf preview subshell can access it.
+    export FZF_FFT_SEARCH_PATH="$search_path"
+
+    # Strip the base path for a clean display and pipe to fzf
+    local selected_relative_path
+    selected_relative_path=$(echo "$tf_dirs" | sed "s|^$search_path/||" | fzf \
+        --preview "echo 'Terraform files in this directory:' && find \"$FZF_FFT_SEARCH_PATH\"/{} -name '*.tf' -type f -exec basename {} \\; 2>/dev/null | sort" \
+        --preview-window 'right:50%' \
+        --height '80%' \
+        --border 'rounded' \
+        --header 'Terraform Finder | Press Enter to cd and run terraform plan')
+
+    # If a directory was selected (i.e., you pressed Enter)...
+    if [[ -n "$selected_relative_path" ]]; then
+        # ...reconstruct the full path by prepending the search_path.
+        local full_path="$search_path/$selected_relative_path"
+        
+        # Change to the selected directory
+        echo "Changing to: $full_path"
+        cd "$full_path" || return 1
+        
+        # Clear screen and show current location
+        clear
+        echo "📁 Current directory: $(pwd)"
+        echo "🔍 Terraform files found:"
+        find . -name "*.tf" -type f -exec basename {} \; | sort
+        echo ""
+        
+        # Run terraform init and plan
+        echo "🚀 Running terraform init && terraform plan..."
+        echo "────────────────────────────────────────"
+        terraform init && terraform plan
+    fi
+}
+
+# fftg (Fuzzy Find Terragrunt) - Find directories containing .hcl files and run terragrunt plan
+# Usage: Type 'fftg' in your terminal and press Enter.
+fftg() {
+    # Attempt to find the root of the current git repository. 
+    local git_root
+    git_root=$(git rev-parse --show-toplevel 2>/dev/null)
+    
+    local search_path
+    # Check if we are inside a git repository.
+    if [[ -n "$git_root" ]]; then
+        # If yes, set the search path to the project's root directory.
+        search_path="$git_root"
+    else
+        # If no, fall back to searching from the home directory.
+        search_path="$HOME"
+    fi
+
+    # Find directories that contain .hcl files
+    local hcl_dirs
+    hcl_dirs=$(find "$search_path" -name "*.hcl" -type f -exec dirname {} \; 2>/dev/null | sort -u)
+    
+    # Check if any Terragrunt directories were found
+    if [[ -z "$hcl_dirs" ]]; then
+        echo "No directories with .hcl files found in $search_path"
+        return 1
+    fi
+    
+    # We need to export the search_path so the fzf preview subshell can access it.
+    export FZF_FFTG_SEARCH_PATH="$search_path"
+
+    # Strip the base path for a clean display and pipe to fzf
+    local selected_relative_path
+    selected_relative_path=$(echo "$hcl_dirs" | sed "s|^$search_path/||" | fzf \
+        --preview "echo 'Terragrunt files in this directory:' && find \"$FZF_FFTG_SEARCH_PATH\"/{} -name '*.hcl' -type f -exec basename {} \\; 2>/dev/null | sort" \
+        --preview-window 'right:50%' \
+        --height '80%' \
+        --border 'rounded' \
+        --header 'Terragrunt Finder | Press Enter to cd and run terragrunt plan')
+
+    # If a directory was selected (i.e., you pressed Enter)...
+    if [[ -n "$selected_relative_path" ]]; then
+        # ...reconstruct the full path by prepending the search_path.
+        local full_path="$search_path/$selected_relative_path"
+        
+        # Change to the selected directory
+        echo "Changing to: $full_path"
+        cd "$full_path" || return 1
+        
+        # Clear screen and show current location
+        clear
+        echo "📁 Current directory: $(pwd)"
+        echo "🔍 Terragrunt files found:"
+        find . -name "*.hcl" -type f -exec basename {} \; | sort
+        echo ""
+        
+        # Run terragrunt plan
+        echo "🚀 Running terragrunt plan..."
+        echo "────────────────────────────────────────"
+        terragrunt plan
     fi
 }
 

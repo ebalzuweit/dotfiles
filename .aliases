@@ -23,7 +23,6 @@ alias pull='git pull'
 # programs
 alias gg='lazygit'
 alias dd='lazydocker'
-alias zj='zellij'
 
 alias k="kubectl"
 alias ka="kubectl apply -f . -R"

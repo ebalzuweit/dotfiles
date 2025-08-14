@@ -69,8 +69,8 @@ shell_loaded() {
     command -v zprofile_on >/dev/null && echo "  ✓ profiling/zprof (zprofile_on, zprofile_off, pzprof)"
     command -v python_with_telemetry >/dev/null && echo "  ✓ profiling/telemetry (python_with_telemetry, lrp, lrg)" 
     command -v ghc >/dev/null && echo "  ✓ git/functions (ghc, ffgn, fpr, git_branch, git_status)"
-    command -v ff >/dev/null && echo "  ✓ navigation/finders (ff, ffn, fch, y)"
-    command -v togglenetskope >/dev/null && echo "  ✓ utilities/general (togglenetskope, r_xml, k_port, brewf)"
+    command -v ff >/dev/null && echo "  ✓ navigation/finders (ff, ffn, fft, fftg, fch, y)"
+    command -v togglenetskope >/dev/null && echo "  ✓ utilities/general (togglenetskope, r_xml, k_port, brewf, help)"
     command -v ttn >/dev/null && echo "  ✓ utilities/terminal-tabs (ttn, tatn)"
     command -v add_req >/dev/null && echo "  ✓ network/api (add_req, curl_with_jqp)"
     
