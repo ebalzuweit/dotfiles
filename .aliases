@@ -23,3 +23,29 @@ alias gg='lazygit'
 alias dd='lazydocker'
 alias zj='zellij'
 alias dev='name="$(basename $(pwd))";zellij -l dev options --session-name "$name" --attach-to-session true'
+
+# commands
+cdr() {
+	# Change Directory to Repo
+	local REPO_DIR="$HOME/source/repos"
+
+	if ! command -v fzf &> /dev/null; then
+		echo "Error: fzf is not installed" >&2
+		return 1
+	fi
+
+	if [[ ! -d "$REPO_DIR" ]]; then
+		echo "Error: '$REPO_DIR' does not exist" >&2
+		return 1
+	fi
+
+	local selected_dir=$(find "$REPO_DIR" -maxdepth 1 -type d -not -path "$REPO_DIR" | \
+		sed "s|$REPO_DIR/||" | \
+		fzf --preview "if [[ -f '$REPO_DIR/{}/README.md' ]]; then cat '$REPO_DIR/{}/README.md'; else ls -la '$REPO_DIR/{}'; fi" \
+			--preview-window=right:50% \
+			--prompt="Select a repository: ")
+
+	if [[ -n "$selected_dir" ]]; then
+		cd "$REPO_DIR/$selected_dir"
+	fi
+}
