@@ -1,0 +1,46 @@
+# FONT CONFIGURATION
+font-family = "FiraCode Nerd Font"
+font-size = 16
+font-feature = -calt
+
+# THEME
+theme = catppuccin-mocha
+
+# TABS
+# Tab location at the top
+gtk-tabs-location = top
+
+# WINDOW APPEARANCE
+window-decoration = true
+window-padding-x = 10
+window-padding-y = 10
+window-padding-balance = true
+window-padding-color = background
+
+# COLORS & BORDERS
+selection-background = #89b4fa
+selection-foreground = #1e1e2e
+cursor-style = block
+cursor-style-blink = true
+
+# OPACITY
+background-opacity = 0.98
+
+# SCROLLBACK
+scrollback-limit = 10000
+
+# MISC FEATURES
+copy-on-select = true
+focus-follows-mouse = false
+mouse-hide-while-typing = true
+
+# MACOS SPECIFIC
+macos-option-as-alt = true
+macos-titlebar-style = tabs
+macos-titlebar-proxy-icon = visible
+macos-icon = custom-style
+
+# TERMINAL BEHAVIOR
+confirm-close-surface = false
+clipboard-paste-protection = false
+clipboard-trim-trailing-spaces = true

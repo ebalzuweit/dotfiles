@@ -1,0 +1,106 @@
+
+{
+  "global": {
+    "ask_for_confirmation_before_quitting": true,
+    "show_in_menu_bar": true,
+    "show_profile_name_in_menu_bar": false
+  },
+  "profiles": [
+    {
+      "name": "Default",
+      "selected": true,
+      "simple_modifications": [
+        { "from": { "key_code": "caps_lock" }, "to": [ { "key_code": "left_control" } ] }
+      ],
+      "complex_modifications": {
+        "parameters": {
+          "basic.simultaneous_threshold_milliseconds": 50,
+          "basic.to_delayed_action_delay_milliseconds": 500,
+          "basic.to_if_alone_timeout_milliseconds": 1000,
+          "basic.to_if_held_down_threshold_milliseconds": 500
+        },
+        "rules": [
+          {
+            "description": "Ctrl+JIKL as Arrow Keys (with Shift selection support)",
+            "manipulators": [
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "j",
+                  "modifiers": { "mandatory": ["control"], "optional": ["any"] }
+                },
+                "to": [ { "key_code": "left_arrow" } ]
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "i",
+                  "modifiers": { "mandatory": ["control"], "optional": ["any"] }
+                },
+                "to": [ { "key_code": "up_arrow" } ]
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "k",
+                  "modifiers": { "mandatory": ["control"], "optional": ["any"] }
+                },
+                "to": [ { "key_code": "down_arrow" } ]
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "l",
+                  "modifiers": { "mandatory": ["control"], "optional": ["any"] }
+                },
+                "to": [ { "key_code": "right_arrow" } ]
+              },
+
+              /* With Shift for selection */
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "j",
+                  "modifiers": { "mandatory": ["control", "shift"], "optional": ["any"] }
+                },
+                "to": [ { "key_code": "left_arrow", "modifiers": ["shift"] } ]
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "i",
+                  "modifiers": { "mandatory": ["control", "shift"], "optional": ["any"] }
+                },
+                "to": [ { "key_code": "up_arrow", "modifiers": ["shift"] } ]
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "k",
+                  "modifiers": { "mandatory": ["control", "shift"], "optional": ["any"] }
+                },
+                "to": [ { "key_code": "down_arrow", "modifiers": ["shift"] } ]
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "l",
+                  "modifiers": { "mandatory": ["control", "shift"], "optional": ["any"] }
+                },
+                "to": [ { "key_code": "right_arrow", "modifiers": ["shift"] } ]
+              }
+            ]
+          }
+        ]
+      },
+      "devices": [],
+      "fn_function_keys": [],
+      "virtual_hid_keyboard": {
+        "country_code": 0,
+        "indicate_sticky_modifier_keys_state": true,
+        "mouse_key_xy_scale": 100
+      }
+    }
+  ]
+}
+

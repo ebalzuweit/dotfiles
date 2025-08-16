@@ -27,8 +27,39 @@ function installDotfiles() {
   cp -R nvim ~/.config/
   echo "  yazi"
   cp -R yazi ~/.config/
-  echo "   kitty"
-  cp -R kitty ~/.config/
+  # echo "   kitty"
+  # cp -R kitty ~/.config/
+  echo "  ghostty"
+  cp -R ghostyy ~/.config/ghostty
+  
+  # Install custom Ghostty icon if Ghostty is installed
+  if [ -d "/Applications/Ghostty.app" ] && [ -f "ghostyy/icon/sublime.icns" ]; then
+    echo "  Installing custom Ghostty icon..."
+    # Backup original icon
+    if [ ! -f "/Applications/Ghostty.app/Contents/Resources/AppIcon-backup.icns" ]; then
+      sudo cp /Applications/Ghostty.app/Contents/Resources/AppIcon.icns /Applications/Ghostty.app/Contents/Resources/AppIcon-backup.icns
+    fi
+    # Install custom icon
+    sudo cp ghostyy/icon/sublime.icns /Applications/Ghostty.app/Contents/Resources/AppIcon.icns
+    # Clear icon cache
+    sudo rm -rf /Library/Caches/com.apple.iconservices.store 2>/dev/null
+    killall Dock 2>/dev/null
+    echo "    ✓ Custom Ghostty icon installed"
+  fi
+  
+  echo "  karabiner"
+  # Close Karabiner if it's running before copying config
+  osascript -e 'tell application "Karabiner-Elements" to quit' 2>/dev/null || true
+  osascript -e 'tell application "Karabiner-EventViewer" to quit' 2>/dev/null || true
+  
+  # Copy the configuration
+  cp -R keyboard/mac/karabiner ~/.config/
+  
+  # Reload Karabiner configuration without opening the GUI
+  # This uses the CLI tool to reload config silently
+  if command -v '/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli' &>/dev/null; then
+    '/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli' --reload-karabiner-config 2>/dev/null || true
+  fi
 
   # Create necessary directories
   echo "Creating script directories..."
@@ -118,7 +149,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     zsh-autosuggestions zsh-syntax-highlighting
     bat kubectx k9s neovim
     blueutil xmlstarlet golangci-lint
-    jq ripgrep gh taproom
+    jq ripgrep gh lazygit lazydocker
   )
 
   # Install or upgrade each package
@@ -131,6 +162,32 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
       brew install "$package"
     fi
   done
+
+  # brew isntall cask packages
+  echo "Checking and installing/upgrading cask packages..."
+
+  CASK_PACKAGES=(
+    # kitty
+    ghostty
+    karabiner-elements
+    nikitabobko/tap/aerospace
+  )
+
+  # Install or upgrade each cask package
+  for package in "${CASK_PACKAGES[@]}"; do
+    if brew list --cask | grep -q "^${package}$"; then
+      echo "  📦 ${package} already installed, checking for updates..."
+      brew upgrade --cask "$package" 2>/dev/null || echo "    ✓
+  ${package} is up to date"
+    else
+      echo "  📦 Installing ${package}..."
+      brew install --cask "$package"
+    fi
+  done
+
+  # taproom is a special case, it needs to be installed from the tap
+  brew tap gromgit/brewtils
+  brew install gromgit/brewtils/taproom
 
   # Handle tap packages separately
   echo "  📦 Checking jqp..."
