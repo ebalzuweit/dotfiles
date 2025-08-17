@@ -22,6 +22,8 @@ function installDotfiles() {
   cp .wezterm.lua $HOME
   echo "  .vimrc"
   cp .vimrc $HOME
+  echo "  btop"
+  cp -R btop $HOME/.config/
   echo "  nvim"
   cp -R nvim $HOME/.config/
   echo "  helix"
