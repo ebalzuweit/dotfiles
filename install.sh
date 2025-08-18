@@ -269,6 +269,24 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   fi
 
   echo "Python virtual environment for Neovim configured."
+
+  # install claude if not installed and look for any updates needed
+  if ! command -v claude &>/dev/null; then
+    echo "Installing claude-cli..."
+    npm install -g @anthropic-ai/claude-code
+  else
+    echo "claude-cli is already installed, checking for updates..."
+    npm update -g @anthropic-ai/claude-code || echo "    ✓ claude-cli is up to date"
+  fi
+
+  # install gemini if not installed and look for any updates needed
+  if ! command -v gemini &>/dev/null; then
+    echo "Installing gemini-cli..."
+    npm install -g @google/gemini-cli
+  else
+    echo "gemini-cli is already installed, checking for updates..."
+    npm update -g @google/gemini-cli || echo "    ✓ gemini-cli is up to date"
+  fi
 fi
 
 unset installDotfiles
