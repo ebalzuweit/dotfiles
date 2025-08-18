@@ -31,6 +31,54 @@ vim.keymap.set("n", "<leader><leader>", function()
     end
 end, { desc = "Find files (current window)" })
 
+-- Override <leader>sg to use current window for live grep
+vim.keymap.set("n", "<leader>sg", function()
+    local ok, snacks = pcall(function()
+        return Snacks
+    end)
+    if ok and snacks and snacks.picker then
+        -- Use Snacks picker with edit action to open in current window
+        snacks.picker.grep({
+            action = function(item, ctx)
+                -- Edit in current window instead of split
+                vim.cmd("edit " .. item.file)
+                if item.pos and item.pos[1] then
+                    vim.api.nvim_win_set_cursor(0, { item.pos[1], item.pos[2] or 0 })
+                end
+            end,
+        })
+    elseif package.loaded["telescope"] then
+        -- Fallback to Telescope if Snacks is not available
+        require("telescope.builtin").live_grep()
+    else
+        vim.notify("No grep picker available", vim.log.levels.WARN)
+    end
+end, { desc = "Grep (current window)" })
+
+-- Override <leader>sG to use current window for grep string
+vim.keymap.set("n", "<leader>sG", function()
+    local ok, snacks = pcall(function()
+        return Snacks
+    end)
+    if ok and snacks and snacks.picker then
+        -- Use Snacks picker with edit action to open in current window
+        snacks.picker.grep_word({
+            action = function(item, ctx)
+                -- Edit in current window instead of split
+                vim.cmd("edit " .. item.file)
+                if item.pos and item.pos[1] then
+                    vim.api.nvim_win_set_cursor(0, { item.pos[1], item.pos[2] or 0 })
+                end
+            end,
+        })
+    elseif package.loaded["telescope"] then
+        -- Fallback to Telescope if Snacks is not available
+        require("telescope.builtin").grep_string()
+    else
+        vim.notify("No grep string picker available", vim.log.levels.WARN)
+    end
+end, { desc = "Grep string (current window)" })
+
 -- Diagnostic keymaps
 vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, { desc = "Open diagnostic float" })
 vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous diagnostic" })

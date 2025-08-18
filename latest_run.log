@@ -1,0 +1,72 @@
+================================================================================
+✅ GitHub Actions Run Log
+================================================================================
+Repository: ab-inbev-beertech/wholesaler-portal
+Run Number: #9259837202508512
+Run ID: 16999794581
+Workflow: 
+Branch: 
+Commit: 
+Status: 
+Conclusion: 
+Created: 
+URL: 
+Jobs: Multiple jobs detected
+
+Generated: 2025-08-18 11:50:25
+================================================================================
+
+check-release-name	UNKNOWN STEP	﻿2025-08-15T21:31:03.5862939Z Current runner version: '2.328.0'
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5871749Z Runner name: 'gh-hosted-naz-dev-4core-ubuntu-22.04_12ebf5517336'
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5873607Z Runner group name: 'naz-dev'
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5874916Z Machine name: 'pkrvmdgpy2b27sr'
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5900480Z ##[group]Operating System
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5901487Z Ubuntu
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5902536Z 22.04.5
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5903601Z LTS
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5904402Z ##[endgroup]
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5905246Z ##[group]Runner Image
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5906150Z Image: ubuntu-22.04
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5907022Z Version: 20250810.1.0
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5908682Z Included Software: https://github.com/actions/runner-images/blob/ubuntu22/20250810.1/images/ubuntu/Ubuntu2204-Readme.md
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5911137Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu22%2F20250810.1
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5913151Z ##[endgroup]
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5917394Z ##[group]GITHUB_TOKEN Permissions
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5920568Z Actions: write
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5921712Z Attestations: write
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5922591Z Checks: write
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5923619Z Contents: write
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5924402Z Deployments: write
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5925378Z Discussions: write
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5926126Z Issues: write
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5927011Z Metadata: read
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5927840Z Models: read
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5928581Z Packages: write
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5929452Z Pages: write
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5930212Z PullRequests: write
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5931062Z RepositoryProjects: write
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5932071Z SecurityEvents: write
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5933168Z Statuses: write
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5933902Z ##[endgroup]
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5936870Z Secret source: Actions
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.5938483Z Prepare workflow directory
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.6415516Z Prepare all required actions
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.6553340Z Complete job name: check-release-name
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.7590747Z ##[group]Run echo "Release tag: api-v5.1.2"
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.7591536Z [36;1mecho "Release tag: api-v5.1.2"[0m
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.7592232Z [36;1mecho "Release name: api-v5.1.2"[0m
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.7634379Z shell: /usr/bin/bash -e {0}
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.7635289Z ##[endgroup]
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.7825347Z Release tag: api-v5.1.2
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.7826053Z Release name: api-v5.1.2
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.7923443Z ##[group]Run if [[ "api-v5.1.2" == *"reg"* ]]; then
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.7924253Z [36;1mif [[ "api-v5.1.2" == *"reg"* ]]; then[0m
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.7924973Z [36;1m  echo "should_run=true" >> $GITHUB_OUTPUT[0m
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.7925630Z [36;1melse[0m
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.7926202Z [36;1m  echo "should_run=false" >> $GITHUB_OUTPUT[0m
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.7926824Z [36;1mfi[0m
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.7955651Z shell: /usr/bin/bash -e {0}
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.7956173Z ##[endgroup]
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.8077581Z Evaluate and set job outputs
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.8086652Z Set output 'should_run'
+check-release-name	UNKNOWN STEP	2025-08-15T21:31:03.8088822Z Cleaning up orphan processes
