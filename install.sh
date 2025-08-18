@@ -30,7 +30,7 @@ function installDotfiles() {
   # echo "   kitty"
   # cp -R kitty ~/.config/
   echo "  ghostty"
-  cp -R ghostyy ~/.config/ghostty
+  cp -R ghostty ~/.config/ghostty
 
   # Install custom Ghostty icon if Ghostty is installed
   # if [ -d "/Applications/Ghostty.app" ] && [ -f "ghostyy/icon/sublime.icns" ]; then
