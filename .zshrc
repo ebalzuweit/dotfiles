@@ -152,3 +152,5 @@ source "$HOME/GitHub/matthewmyrick/dotfiles/scripts/shell/loader.sh"
 if ! type shell_loaded &>/dev/null; then
     source "$HOME/GitHub/matthewmyrick/dotfiles/scripts/shell/loader.sh"
 fi
+
+export PATH="/opt/homebrew/opt/libpq/bin:$PATH"

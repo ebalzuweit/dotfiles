@@ -150,7 +150,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     bat kubectx k9s neovim
     blueutil xmlstarlet golangci-lint
     jq ripgrep gh lazygit lazydocker
-    btop lnav ripgrep nvim
+    btop lnav ripgrep nvim libpq
   )
 
   # Install or upgrade each package
@@ -164,6 +164,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     fi
   done
 
+  brew link --force libpq
   # brew isntall cask packages
   echo "Checking and installing/upgrading cask packages..."
 
