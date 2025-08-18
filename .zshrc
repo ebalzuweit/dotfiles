@@ -57,6 +57,10 @@ compinit -C  # -C flag skips security check for faster startup
 zstyle ':completion:*' rehash true
 setopt prompt_subst
 
+# --- TERMINAL CONFIGURATION ---
+# Set terminal type to xterm-256color for better color support
+export TERM=xterm-256color
+
 # --- HOMEBREW CONFIGURATION ---
 # Detect Homebrew prefix (Intel -> /usr/local, Apple Silicon -> /opt/homebrew)
 : ${HOMEBREW_PREFIX:=/opt/homebrew}

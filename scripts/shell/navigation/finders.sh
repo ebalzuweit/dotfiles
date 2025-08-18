@@ -55,20 +55,10 @@ ff() {
 }
 
 ffn() {
-    # Attempt to find the root of the current git repository. 
-    local git_root
-    git_root=$(git rev-parse --show-toplevel 2>/dev/null)
     
     local search_path
-    # Check if we are inside a git repository.
-    if [[ -n "$git_root" ]]; then
-        # If yes, set the search path to the project's root directory.
-        search_path="$git_root"
-    else
-        # If no, fall back to searching from the home directory.
-        search_path="$HOME"
-    fi
-
+    search_path="$HOME"
+    
     # We need to export the search_path so the fzf preview subshell can access it.
     export FZF_FF_SEARCH_PATH="$search_path"
 
