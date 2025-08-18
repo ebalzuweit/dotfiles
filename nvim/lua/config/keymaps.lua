@@ -9,10 +9,18 @@ vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", {})
 vim.keymap.set({ "n", "v" }, "0", "^", { desc = "Go to first non-blank character" })
 vim.keymap.set({ "n", "v" }, "^", "0", { desc = "Go to beginning of line" })
 
+-- Window navigation with Ctrl+H prefix (WASD-style)
+vim.keymap.set("n", "<C-h>a", "<C-w>h", { desc = "Navigate to left window (WASD)" })
+vim.keymap.set("n", "<C-h>s", "<C-w>j", { desc = "Navigate to lower window (WASD)" })
+vim.keymap.set("n", "<C-h>w", "<C-w>k", { desc = "Navigate to upper window (WASD)" })
+vim.keymap.set("n", "<C-h>d", "<C-w>l", { desc = "Navigate to right window (WASD)" })
+
 -- Override <leader><leader> to use current window for file picker
 vim.keymap.set("n", "<leader><leader>", function()
     -- Check if Snacks is available by trying to access it
-    local ok, snacks = pcall(function() return Snacks end)
+    local ok, snacks = pcall(function()
+        return Snacks
+    end)
     if ok and snacks and snacks.picker then
         -- Use Snacks picker with edit action to open in current window
         snacks.picker.files({
@@ -50,7 +58,9 @@ vim.keymap.set("n", "<leader>bf", function()
             end,
         })
     else
-        local ok, snacks = pcall(function() return Snacks end)
+        local ok, snacks = pcall(function()
+            return Snacks
+        end)
         if ok and snacks and snacks.picker then
             snacks.picker.buffers()
         else

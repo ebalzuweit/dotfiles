@@ -150,6 +150,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     bat kubectx k9s neovim
     blueutil xmlstarlet golangci-lint
     jq ripgrep gh lazygit lazydocker
+    btop
   )
 
   # Install or upgrade each package
