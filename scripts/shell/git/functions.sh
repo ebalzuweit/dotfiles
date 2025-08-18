@@ -20,17 +20,68 @@ _get_local_orgs() {
   find "$base_dir" -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | sort
 }
 
-# Helper function to select organization interactively
+# Helper function to get organizations from GitHub API  
+_get_github_orgs() {
+  echo "🔍 Fetching organizations from GitHub..." >&2
+  
+  # Get organizations the user belongs to
+  local user_orgs
+  user_orgs=$(gh api user/orgs --jq '.[].login' 2>/dev/null | sort)
+  
+  # Get the current user
+  local current_user
+  current_user=$(gh api user --jq '.login' 2>/dev/null)
+  
+  # Combine user and orgs
+  {
+    [ -n "$current_user" ] && echo "$current_user"
+    [ -n "$user_orgs" ] && echo "$user_orgs"
+  } | sort -u
+}
+
+# Helper function to select organization interactively (with fallback to GitHub API)
 _select_org() {
   local local_orgs
   local_orgs=$(_get_local_orgs)
   
-  if [ -z "$local_orgs" ]; then
-    echo "No local organizations found. Please clone a repository first with 'ghc <org>'."
-    return 1
+  # If we have local orgs, use them with option to fetch from GitHub
+  if [ -n "$local_orgs" ]; then
+    echo "Select from local organizations (or choose 'Fetch from GitHub' for more options):" >&2
+    local selection
+    selection=$(
+      {
+        echo "$local_orgs"
+        echo "🌐 Fetch from GitHub"
+      } | fzf --prompt="Select an organization > " --height="40%" --border
+    )
+    
+    if [[ "$selection" == "🌐 Fetch from GitHub" ]]; then
+      # User chose to fetch from GitHub
+      local github_orgs
+      github_orgs=$(_get_github_orgs)
+      
+      if [ -n "$github_orgs" ]; then
+        echo "$github_orgs" | fzf --prompt="Select a GitHub organization > " --height="40%" --border
+      else
+        echo "❌ Failed to fetch organizations from GitHub." >&2
+        return 1
+      fi
+    else
+      echo "$selection"
+    fi
+  else
+    # No local orgs, fetch from GitHub directly
+    echo "No local organizations found. Fetching from GitHub..." >&2
+    local github_orgs
+    github_orgs=$(_get_github_orgs)
+    
+    if [ -n "$github_orgs" ]; then
+      echo "$github_orgs" | fzf --prompt="Select a GitHub organization > " --height="40%" --border
+    else
+      echo "❌ Failed to fetch organizations from GitHub." >&2
+      return 1
+    fi
   fi
-  
-  echo "$local_orgs" | fzf --prompt="Select an organization > " --height="30%" --border
 }
 
 # Helper function to select repository interactively from GitHub API
@@ -409,81 +460,99 @@ ghpra() {
 # ghrao (Git Actions Open) - Interactively find and view GitHub Actions runs for a repository.
 # Shows all workflow runs for the selected repository and opens them in browser.
 ghrao() {
-  # --- 1. Handle Organization Selection ---
-  local org
+  # --- 1. Auto-detect current repo or handle organization selection ---
+  local org repo full_repo
+  
+  # If no arguments provided, try to auto-detect current GitHub repo
   if [ -z "$1" ]; then
-    # No org provided, use fuzzy finder to select from local orgs
-    org=$(_select_org)
-    if [ -z "$org" ]; then
-      echo "No organization selected."
-      return 1
+    if git remote get-url origin &>/dev/null 2>&1; then
+      local remote_url=$(git remote get-url origin)
+      # Extract org/repo from GitHub URL (supports both https and ssh)
+      if echo "$remote_url" | grep -q "github.com"; then
+        full_repo=$(echo "$remote_url" | sed -E 's|.*github\.com[:/]([^/]+/[^/]+)(\.git)?.*|\1|' | sed 's/\.git$//')
+        if [ -n "$full_repo" ] && [ "$full_repo" != "$remote_url" ]; then
+          echo "📦 Auto-detected repository: $full_repo"
+        fi
+      fi
     fi
-    echo "Selected organization: $org"
-  else
-    org="$1"
-  fi
-
-  # --- 2. Define Variables ---
-  local repo_list
-  local selected_repo
-  local repo_name
-  local repo_basename
-  local full_repo
-
-  # --- 3. Handle Repository Selection ---
-  if [ -z "$2" ]; then
-    # No repo provided, fetch and select from GitHub API
-    echo "Fetching repositories for '$org'..."
-    repo_list=$(gh repo list "$org" --limit 1000) || return 1
-
-    # Check if any repositories were found
-    if [ -z "$repo_list" ]; then
-        echo "No repositories found for organization '$org' or organization does not exist."
+    
+    if [ -z "$full_repo" ]; then
+      echo "Not in a GitHub repository. Let's select an organization..."
+      local org
+      org=$(_select_org)
+      if [ -z "$org" ]; then
+        echo "❌ No organization selected."
         return 1
-    fi
-
-    # Calculate dynamic column widths
-    local max_repo_width
-    max_repo_width=$(echo "$repo_list" | awk '{if (length($1) > max) max = length($1)} END {print max}')
-    
-    # Set minimum width of 20
-    if [ "$max_repo_width" -lt 20 ]; then
-      max_repo_width=20
-    fi
-    
-    # Create header with dynamic width
-    local repo_header=$(printf "%-${max_repo_width}s" "REPOSITORY")
-
-    # Interactive repository selection with dynamic-width colors
-    selected_repo=$(echo "$repo_list" | awk -v repo_width="$max_repo_width" '{
-      repo_name = $1;
-      visibility = $2; if (length(visibility) > 10) visibility = substr(visibility, 1, 7) "...";
-      language = $3; if (length(language) > 12) language = substr(language, 1, 9) "...";
-      updated = $4; if (length(updated) > 12) updated = substr(updated, 1, 9) "...";
-      printf "\033[36m%-*s\033[0m \033[37m%-10s\033[0m \033[33m%-12s\033[0m \033[35m%-12s\033[0m\n", repo_width, repo_name, visibility, language, updated
-    }' | fzf --prompt="Select a repo from '$org' > " --height="50%" --border --ansi \
-      --header="$repo_header VISIBILITY LANGUAGE     UPDATED     " \
-      --delimiter=' ' --with-nth=1,2,3,4)
-
-    # Proceed only if a repository was selected
-    if [ -n "$selected_repo" ]; then
-      # Extract just the full repo name (e.g., "google/go-cloud")
-      repo_name=$(echo "$selected_repo" | awk '{print $1}')
-      # Extract just the repository's base name (e.g., "go-cloud")
-      repo_basename=$(basename "$repo_name")
-    else
-      echo "No repository selected."
-      return 1
+      fi
+      
+      # Now select repo from the chosen org
+      echo "Selected organization: $org"
+      
+      # Set the org for the repo selection logic below
+      set -- "$org"
     fi
   else
-    repo_basename="$2"
+    # If arguments provided, do manual selection
+    org="$1"
+    
+    # --- 2. Define Variables ---
+    local repo_list
+    local selected_repo
+    local repo_name
+    local repo_basename
+
+    # --- 3. Handle Repository Selection ---
+    if [ -z "$2" ]; then
+      # No specific repo provided, fetch and select from GitHub API
+      echo "🔍 Fetching repositories for '$org'..."
+      repo_list=$(gh repo list "$org" --limit 1000) || return 1
+
+      # Check if any repositories were found
+      if [ -z "$repo_list" ]; then
+          echo "❌ No repositories found for organization '$org' or organization does not exist."
+          return 1
+      fi
+
+      # Calculate dynamic column widths
+      local max_repo_width
+      max_repo_width=$(echo "$repo_list" | awk '{if (length($1) > max) max = length($1)} END {print max}')
+      
+      # Set minimum width of 20
+      if [ "$max_repo_width" -lt 20 ]; then
+        max_repo_width=20
+      fi
+      
+      # Create header with dynamic width
+      local repo_header=$(printf "%-${max_repo_width}s" "REPOSITORY")
+
+      # Interactive repository selection with dynamic-width colors
+      selected_repo=$(echo "$repo_list" | awk -v repo_width="$max_repo_width" '{
+        repo_name = $1;
+        visibility = $2; if (length(visibility) > 10) visibility = substr(visibility, 1, 7) "...";
+        language = $3; if (length(language) > 12) language = substr(language, 1, 9) "...";
+        updated = $4; if (length(updated) > 12) updated = substr(updated, 1, 9) "...";
+        printf "\033[36m%-*s\033[0m \033[37m%-10s\033[0m \033[33m%-12s\033[0m \033[35m%-12s\033[0m\n", repo_width, repo_name, visibility, language, updated
+      }' | fzf --prompt="Select a repo from '$org' > " --height="50%" --border --ansi \
+        --header="$repo_header VISIBILITY LANGUAGE     UPDATED     " \
+        --delimiter=' ' --with-nth=1,2,3,4)
+
+      # Proceed only if a repository was selected
+      if [ -n "$selected_repo" ]; then
+        # Extract just the full repo name (e.g., "google/go-cloud")
+        repo_name=$(echo "$selected_repo" | awk '{print $1}')
+        full_repo="$repo_name"
+      else
+        echo "❌ No repository selected."
+        return 1
+      fi
+    else
+      # Specific repo provided
+      full_repo="$org/$2"
+    fi
   fi
 
-  # --- 4. Define Full Repository Name ---
-  full_repo="$org/$repo_basename"
-
-  # --- 5. Get GitHub Actions for Repository ---
-  echo "Fetching GitHub Actions for '$full_repo'..."
+  # --- 4. Get GitHub Actions for Repository ---
+  echo "🔍 Fetching GitHub Actions for '$full_repo'..."
   
   # Get workflow runs for the repository (all branches, latest 100) - using simpler format first
   local raw_actions
@@ -595,250 +664,312 @@ ghrao() {
   fi
 }
 
-# ghraw (Git Actions Watch) - Interactively find and watch/view GitHub Actions logs for a repository.
-# If a run is in progress, it will live watch the logs. Otherwise, it shows the completed logs.
-# Use -r or --read to view saved error logs in a TUI interface.
+# ghraw (Git Actions Watch) - Interactive search and view GitHub Actions runs
+# Shows runs with fuzzy search. Select to watch (if running) or view logs (if completed).
 ghraw() {
-  # --- Handle -r/--read flag ---
-  if [[ "$1" == "-r" || "$1" == "--read" ]]; then
-    local log_dir="$HOME/.config/ghraw"
-    local log_file="$log_dir/latest_run.log"
-    
-    if [[ ! -f "$log_file" ]]; then
-      echo "No log file found at $log_file"
-      echo "Run 'ghraw' first to generate a log file."
-      return 1
-    fi
-    
-    echo "Opening GitHub Actions log in interactive viewer..."
-    echo "────────────────────────────────────────────────────────────────"
-    
-    _ghraw_open_interactive_viewer "$log_file"
-    return 0
-  fi
-  # --- 1. Handle Organization Selection ---
-  local org
+  # --- 1. Auto-detect current repo or handle manual input ---
+  local full_repo=""
+  
+  # If no arguments provided, try to auto-detect current GitHub repo
   if [ -z "$1" ]; then
-    # No org provided, use fuzzy finder to select from local orgs
-    org=$(_select_org)
-    if [ -z "$org" ]; then
-      echo "No organization selected."
-      return 1
-    fi
-    echo "Selected organization: $org"
-  else
-    org="$1"
-  fi
-
-  # --- 2. Define Variables ---
-  local repo_list
-  local selected_repo
-  local repo_name
-  local repo_basename
-  local full_repo
-
-  # --- 3. Handle Repository Selection ---
-  if [ -z "$2" ]; then
-    # No repo provided, fetch and select from GitHub API
-    echo "Fetching repositories for '$org'..."
-    repo_list=$(gh repo list "$org" --limit 1000) || return 1
-
-    # Check if any repositories were found
-    if [ -z "$repo_list" ]; then
-        echo "No repositories found for organization '$org' or organization does not exist."
-        return 1
-    fi
-
-    # Calculate dynamic column widths
-    local max_repo_width
-    max_repo_width=$(echo "$repo_list" | awk '{if (length($1) > max) max = length($1)} END {print max}')
-    
-    # Set minimum width of 20
-    if [ "$max_repo_width" -lt 20 ]; then
-      max_repo_width=20
+    if git remote get-url origin &>/dev/null 2>&1; then
+      local remote_url=$(git remote get-url origin)
+      # Extract org/repo from GitHub URL (supports both https and ssh)
+      if echo "$remote_url" | grep -q "github.com"; then
+        full_repo=$(echo "$remote_url" | sed -E 's|.*github\.com[:/]([^/]+/[^/]+)(\.git)?.*|\1|' | sed 's/\.git$//')
+        if [ -n "$full_repo" ] && [ "$full_repo" != "$remote_url" ]; then
+          echo "📦 Auto-detected repository: $full_repo"
+        fi
+      fi
     fi
     
-    # Create header with dynamic width
-    local repo_header=$(printf "%-${max_repo_width}s" "REPOSITORY")
-
-    # Interactive repository selection with dynamic-width colors
-    selected_repo=$(echo "$repo_list" | awk -v repo_width="$max_repo_width" '{
-      repo_name = $1;
-      visibility = $2; if (length(visibility) > 10) visibility = substr(visibility, 1, 7) "...";
-      language = $3; if (length(language) > 12) language = substr(language, 1, 9) "...";
-      updated = $4; if (length(updated) > 12) updated = substr(updated, 1, 9) "...";
-      printf "\033[36m%-*s\033[0m \033[37m%-10s\033[0m \033[33m%-12s\033[0m \033[35m%-12s\033[0m\n", repo_width, repo_name, visibility, language, updated
-    }' | fzf --prompt="Select a repo from '$org' > " --height="50%" --border --ansi \
-      --header="$repo_header VISIBILITY LANGUAGE     UPDATED     " \
-      --delimiter=' ' --with-nth=1,2,3,4)
-
-    # Proceed only if a repository was selected
-    if [ -n "$selected_repo" ]; then
-      # Extract just the full repo name (e.g., "google/go-cloud")
-      repo_name=$(echo "$selected_repo" | awk '{print $1}')
-      # Extract just the repository's base name (e.g., "go-cloud")
-      repo_basename=$(basename "$repo_name")
-    else
-      echo "No repository selected."
-      return 1
-    fi
-  else
-    repo_basename="$2"
-  fi
-
-  # --- 4. Define Full Repository Name ---
-  full_repo="$org/$repo_basename"
-
-  # --- 5. Get GitHub Actions for Repository ---
-  echo "Fetching GitHub Actions for '$full_repo'..."
-  
-  # Get workflow runs for the repository (all branches, latest 100) - using simpler format first
-  local raw_actions
-  raw_actions=$(gh run list --repo "$full_repo" --limit 100 --json databaseId,number,status,conclusion,workflowName,headSha,headBranch,createdAt,displayTitle)
-  
-  if [ $? -ne 0 ]; then
-    echo "Failed to fetch GitHub Actions for '$full_repo'. Make sure the repository exists and you have access."
-    return 1
-  fi
-  
-  if [ -z "$raw_actions" ] || [ "$raw_actions" = "[]" ]; then
-    echo "No GitHub Actions runs found for repository '$full_repo'."
-    return 1
-  fi
-  
-  # Calculate dynamic workflow name width
-  local max_workflow_width
-  max_workflow_width=$(echo "$raw_actions" | jq -r '.[] | .workflowName' | awk '{if (length($0) > max) max = length($0)} END {print max}')
-  
-  # Set minimum width of 15
-  if [ "$max_workflow_width" -lt 15 ]; then
-    max_workflow_width=15
-  fi
-
-  # Process the JSON to create tab-separated format with color coding (reordered: run#, workflow, status, conclusion, branch, commit, created)
-  local actions_list
-  actions_list=$(echo "$raw_actions" | jq -r '
-    def colorize_status: 
-      if . == "completed" then "\u001b[32m" + . + "\u001b[0m"
-      elif . == "in_progress" then "\u001b[33m" + . + "\u001b[0m" 
-      elif . == "waiting" then "\u001b[36m" + . + "\u001b[0m"
-      else "\u001b[37m" + . + "\u001b[0m"
-      end;
-    
-    def colorize_conclusion:
-      if . == "success" then "\u001b[32m" + . + "\u001b[0m"
-      elif . == "failure" then "\u001b[31m" + . + "\u001b[0m"
-      elif . == "cancelled" then "\u001b[33m" + . + "\u001b[0m"
-      elif . == "" then "\u001b[37m-\u001b[0m"
-      else "\u001b[37m" + . + "\u001b[0m"
-      end;
-    
-    .[] | [
-      ("\u001b[36m" + (.number | tostring) + "\u001b[0m"),
-      (.workflowName),
-      (.status | colorize_status),
-      (.conclusion | colorize_conclusion), 
-      ("\u001b[34m" + .headBranch + "\u001b[0m"),
-      ("\u001b[33m" + (.headSha[:7]) + "\u001b[0m"),
-      ("\u001b[37m" + (.createdAt | fromdateiso8601 | strftime("%Y-%m-%d %H:%M")) + "\u001b[0m"),
-      .displayTitle,
-      .databaseId,
-      .status
-    ] | @tsv
-  ')
-  
-  if [ -z "$actions_list" ]; then
-    echo "No GitHub Actions runs found for repository '$full_repo'."
-    return 1
-  fi
-  
-  # --- 6. Interactive Actions Selection with Dynamic Width Formatting ---
-  # Create dynamic header for workflow column
-  local workflow_header=$(printf "%-${max_workflow_width}s" "WORKFLOW")
-  
-  # Format the actions list with proper column widths
-  local formatted_actions
-  formatted_actions=$(echo "$actions_list" | awk -F'\t' -v workflow_width="$max_workflow_width" '{
-    run_num = $1;
-    workflow = $2; 
-    status = $3;
-    conclusion = $4;
-    branch = $5; if (length(branch) > 15) branch = substr(branch, 1, 12) "...";
-    commit = $6;
-    created = $7; if (length(created) > 16) created = substr(created, 1, 13) "...";
-    title = $8;
-    db_id = $9;
-    raw_status = $10;
-    
-    printf "%-8s \\033[35m%-*s\\033[0m %-12s %-12s \\033[34m%-15s\\033[0m \\033[33m%-8s\\033[0m \\033[37m%-16s\\033[0m %s\\t%s\\t%s\n", 
-           run_num, workflow_width, workflow, status, conclusion, branch, commit, created, title, db_id, raw_status
-  }')
-  
-  echo
-  echo "GitHub Actions for $full_repo (Watch Mode)"
-  echo "────────────────────────────────────────────────────────────────────────────────────"
-  printf "\033[36m%-8s\033[0m \033[35m%-${max_workflow_width}s\033[0m \033[32m%-12s\033[0m \033[31m%-12s\033[0m \033[34m%-15s\033[0m \033[33m%-8s\033[0m \033[37m%-16s\033[0m\n" "RUN #" "WORKFLOW" "STATUS" "CONCLUSION" "BRANCH" "COMMIT" "CREATED"
-  echo "────────────────────────────────────────────────────────────────────────────────────"
-  
-  local selected_action
-  selected_action=$(echo "$formatted_actions" | fzf \
-    --prompt="Select a GitHub Action run to watch/view logs > " \
-    --height="70%" \
-    --border \
-    --ansi \
-    --delimiter=$'\t' \
-    --nth=1 \
-    --with-nth=1)
-  
-  # --- 7. Watch or View Selected Action Run Logs ---
-  if [ -n "$selected_action" ]; then
-    local run_id
-    run_id=$(echo "$selected_action" | awk -F'\t' '{print $2}')
-    local run_number
-    run_number=$(echo "$selected_action" | awk -F'\t' '{print $1}' | sed 's/[^0-9]*//g')
-    local run_status
-    run_status=$(echo "$selected_action" | awk -F'\t' '{print $3}')
-    
-    # Create log directory if it doesn't exist
-    local log_dir="$HOME/.config/ghraw"
-    mkdir -p "$log_dir"
-    local log_file="$log_dir/latest_run.log"
-    
-    echo
-    if [[ "$run_status" == "in_progress" || "$run_status" == "waiting" ]]; then
-      echo "🔴 Run #$run_number is currently running. Starting live watch..."
-      echo "Press Ctrl+C to stop watching."
-      echo "────────────────────────────────────────────────────────────────"
-      
-      # Live watch for in-progress runs
-      gh run watch "$run_id" --repo "$full_repo"
-    else
-      echo "📋 Run #$run_number is completed. Fetching logs..."
-      echo "────────────────────────────────────────────────────────────────"
-      
-      # Get the full log output for completed runs
-      local log_output
-      log_output=$(gh run view "$run_id" --repo "$full_repo" --log 2>&1)
-      local log_exit_code=$?
-      
-      if [[ $log_exit_code -ne 0 ]]; then
-        echo "❌ Failed to fetch logs. Error:"
-        echo "$log_output"
+    if [ -z "$full_repo" ]; then
+      echo "Not in a GitHub repository. Let's select an organization..."
+      local org
+      org=$(_select_org)
+      if [ -z "$org" ]; then
+        echo "❌ No organization selected."
         return 1
       fi
       
-      # Always save logs (both success and failure)
-      _ghraw_save_run_log "$full_repo" "$run_id" "$run_number" "$log_output"
+      # Now select repo from the chosen org
+      echo "Selected organization: $org"
+      local repo_basename
+      repo_basename=$(_select_repo_from_github "$org")
+      if [ -z "$repo_basename" ]; then
+        echo "❌ No repository selected."
+        return 1
+      fi
       
-      echo "✅ Logs processed and formatted. Opening interactive viewer..."
-      echo "────────────────────────────────────────────────────────────────"
-      
-      # Always open interactive viewer for completed runs
-      _ghraw_open_interactive_viewer "$log_file"
+      full_repo="$org/$repo_basename"
+      echo "📦 Repository: $full_repo"
     fi
   else
-    echo "No GitHub Action run selected."
+    # Arguments provided - handle manual input
+    if [[ "$1" == *"/"* ]]; then
+      # Format: org/repo
+      full_repo="$1"
+      echo "📦 Repository: $full_repo"
+    else
+      # Format: org repo
+      local org="$1"
+      local repo="$2"
+      if [ -z "$repo" ]; then
+        echo "❌ Error: Please provide repo name or use format 'org/repo'"
+        echo "Usage:"
+        echo "  ghraw org/repo          # View specific repository"
+        echo "  ghraw org repo          # View specific repository"
+        return 1
+      fi
+      full_repo="$org/$repo"
+      echo "📦 Repository: $full_repo"
+    fi
   fi
+  
+  # --- 2. Get workflow runs ---
+  echo "Fetching GitHub Actions runs for $full_repo..."
+  
+  # Use gh run list with simpler format to avoid JSON parsing issues
+  local runs_list
+  runs_list=$(gh run list --repo "$full_repo" --limit 50 2>/dev/null)
+  
+  if [ $? -ne 0 ] || [ -z "$runs_list" ]; then
+    echo "No GitHub Actions runs found or repository not accessible."
+    return 1
+  fi
+  
+  # --- 3. Interactive selection with fzf ---
+  echo
+  local selected_run
+  selected_run=$(echo "$runs_list" | fzf \
+    --prompt="Select a GitHub Action run > " \
+    --height="70%" \
+    --border \
+    --header="GitHub Actions Runs - Select to watch/view logs")
+  
+  if [ -z "$selected_run" ]; then
+    echo "No run selected."
+    return 0
+  fi
+  
+  # Extract run ID (first column)
+  local run_id=$(echo "$selected_run" | awk '{print $1}')
+  local run_status=$(echo "$selected_run" | awk '{print $2}')
+  
+  echo
+  echo "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════"
+  
+  # --- 4. Watch or view based on status ---
+  if [[ "$run_status" == "in_progress" || "$run_status" == "queued" || "$run_status" == "waiting" ]]; then
+    echo "🔄 Run is currently active. Starting live watch..."
+    echo "Press Ctrl+C to stop watching."
+    echo "────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────"
+    gh run watch "$run_id" --repo "$full_repo"
+  else
+    echo "📋 Run is completed. Fetching logs..."
+    echo "────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────"
+    gh run view "$run_id" --repo "$full_repo" --log
+  fi
+}
+
+# ghrag (Git Actions Grab) - Interactive search and copy workflow/job IDs to clipboard
+# Shows runs with fuzzy search. Select to copy workflow ID (or job ID with -w flag).
+ghrag() {
+  # --- 0. Handle workflow flag ---
+  local workflow_mode=false
+  local args=()
+  
+  # Parse arguments to detect workflow flag
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -w|--workflow)
+        workflow_mode=true
+        shift
+        ;;
+      *)
+        args+=("$1")
+        shift
+        ;;
+    esac
+  done
+  
+  # Set positional parameters from remaining args
+  set -- "${args[@]}"
+  
+  # --- 1. Auto-detect current repo or handle manual input ---
+  local full_repo=""
+  
+  # If no arguments provided, try to auto-detect current GitHub repo
+  if [ -z "$1" ]; then
+    if git remote get-url origin &>/dev/null 2>&1; then
+      local remote_url=$(git remote get-url origin)
+      # Extract org/repo from GitHub URL (supports both https and ssh)
+      if echo "$remote_url" | grep -q "github.com"; then
+        full_repo=$(echo "$remote_url" | sed -E 's|.*github\.com[:/]([^/]+/[^/]+)(\.git)?.*|\1|' | sed 's/\.git$//')
+        if [ -n "$full_repo" ] && [ "$full_repo" != "$remote_url" ]; then
+          echo "📦 Auto-detected repository: $full_repo"
+        fi
+      fi
+    fi
+    
+    if [ -z "$full_repo" ]; then
+      echo "Not in a GitHub repository. Let's select an organization..."
+      local org
+      org=$(_select_org)
+      if [ -z "$org" ]; then
+        echo "❌ No organization selected."
+        return 1
+      fi
+      
+      # Now select repo from the chosen org
+      echo "Selected organization: $org"
+      local repo_basename
+      repo_basename=$(_select_repo_from_github "$org")
+      if [ -z "$repo_basename" ]; then
+        echo "❌ No repository selected."
+        return 1
+      fi
+      
+      full_repo="$org/$repo_basename"
+      echo "📦 Repository: $full_repo"
+    fi
+  else
+    # Arguments provided - handle manual input
+    if [[ "$1" == *"/"* ]]; then
+      # Format: org/repo
+      full_repo="$1"
+      echo "📦 Repository: $full_repo"
+    else
+      # Format: org repo
+      local org="$1"
+      local repo="$2"
+      if [ -z "$repo" ]; then
+        echo "❌ Error: Please provide repo name or use format 'org/repo'"
+        echo "Usage:"
+        if [[ "$workflow_mode" == true ]]; then
+          echo "  ghrag -w org/repo       # Grab job IDs from specific repository"
+          echo "  ghrag --workflow org repo  # Grab job IDs from specific repository"
+        else
+          echo "  ghrag org/repo          # Grab workflow IDs from specific repository"
+          echo "  ghrag org repo          # Grab workflow IDs from specific repository"
+        fi
+        return 1
+      fi
+      full_repo="$org/$repo"
+      echo "📦 Repository: $full_repo"
+    fi
+  fi
+  
+  # --- 2. Get data and setup selection based on mode ---
+  if [[ "$workflow_mode" == true ]]; then
+    echo "🔍 Fetching GitHub Actions jobs for $full_repo..."
+    
+    # Get recent runs first
+    local runs_list
+    runs_list=$(gh run list --repo "$full_repo" --limit 10 2>/dev/null)
+    
+    if [ $? -ne 0 ] || [ -z "$runs_list" ]; then
+      echo "❌ No GitHub Actions runs found or repository not accessible."
+      return 1
+    fi
+    
+    # Build a list of jobs from recent runs - use standard format
+    local all_jobs=""
+    echo "$runs_list" | head -5 | while read -r line; do
+      local run_id=$(echo "$line" | awk '{print $1}')
+      
+      # Get jobs for this run using standard gh format
+      local jobs
+      jobs=$(gh run view "$run_id" --repo "$full_repo" --json jobs --jq '.jobs[] | "\(.databaseId) \(.name // "Unknown Job") \(.status) \(.conclusion // "")"' 2>/dev/null)
+      
+      if [ -n "$jobs" ]; then
+        echo "$jobs"
+      fi
+    done > "/tmp/ghrag_jobs_$$"
+    
+    if [ ! -s "/tmp/ghrag_jobs_$$" ]; then
+      echo "❌ No jobs found in recent workflow runs."
+      rm -f "/tmp/ghrag_jobs_$$"
+      return 1
+    fi
+    
+    echo
+    local selected_job
+    selected_job=$(cat "/tmp/ghrag_jobs_$$" | fzf \
+      --prompt="Select a job to copy ID > " \
+      --height="70%" \
+      --border \
+      --header="GitHub Actions Jobs - Select to copy Job ID")
+    
+    rm -f "/tmp/ghrag_jobs_$$"
+    
+    if [ -z "$selected_job" ]; then
+      echo "No job selected."
+      return 0
+    fi
+    
+    # Extract job ID (first column)  
+    local item_id=$(echo "$selected_job" | awk '{print $1}')
+    local id_type="Job ID"
+    local usage_command="gh run view --job=$item_id"
+    
+  else
+    echo "🔍 Fetching GitHub Actions runs for $full_repo..."
+    
+    # Use gh run list with simpler format
+    local runs_list
+    runs_list=$(gh run list --repo "$full_repo" --limit 50 2>/dev/null)
+    
+    if [ $? -ne 0 ] || [ -z "$runs_list" ]; then
+      echo "❌ No GitHub Actions runs found or repository not accessible."
+      return 1
+    fi
+    
+    echo
+    local selected_run
+    selected_run=$(echo "$runs_list" | fzf \
+      --prompt="Select a run to copy ID > " \
+      --height="70%" \
+      --border \
+      --header="GitHub Actions Runs - Select to copy Workflow ID")
+    
+    if [ -z "$selected_run" ]; then
+      echo "No run selected."
+      return 0
+    fi
+    
+    # Extract run ID (first column)
+    local item_id=$(echo "$selected_run" | awk '{print $1}')
+    local id_type="Workflow ID"
+    local usage_command="gh run view $item_id --repo $full_repo"
+  fi
+  
+  echo
+  echo "════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════"
+  
+  # --- 3. Copy ID to clipboard ---
+  echo "📋 Copying $id_type to clipboard..."
+  
+  # Try different clipboard commands based on platform
+  if command -v pbcopy &> /dev/null; then
+    # macOS
+    echo "$item_id" | pbcopy
+    echo "✅ $id_type copied to clipboard: $item_id"
+  elif command -v xclip &> /dev/null; then
+    # Linux with xclip
+    echo "$item_id" | xclip -selection clipboard
+    echo "✅ $id_type copied to clipboard: $item_id"
+  elif command -v xsel &> /dev/null; then
+    # Linux with xsel
+    echo "$item_id" | xsel --clipboard --input
+    echo "✅ $id_type copied to clipboard: $item_id"
+  else
+    echo "⚠️  Could not detect clipboard command. Here's the $id_type:"
+    echo "🔢 $id_type: $item_id"
+    echo "💡 You can manually copy: $item_id"
+  fi
+  
+  echo "🔗 Use with: $usage_command"
 }
 
 # Helper function to save run logs with metadata (both success and failure)
@@ -1090,20 +1221,44 @@ git_branch() {
 # ghro (Git Repository Open) - Interactively find and open a GitHub repository from an organization in browser.
 # If no org is provided, shows a fuzzy finder to select from local orgs.
 ghro() {
-  # --- 1. Handle Organization Selection ---
-  local org
+  # --- 1. Auto-detect current repo or handle organization selection ---
+  local full_repo=""
+  
+  # If no arguments provided, try to auto-detect current GitHub repo
   if [ -z "$1" ]; then
-    # No org provided, use fuzzy finder to select from local orgs
+    if git remote get-url origin &>/dev/null 2>&1; then
+      local remote_url=$(git remote get-url origin)
+      # Extract org/repo from GitHub URL (supports both https and ssh)
+      if echo "$remote_url" | grep -q "github.com"; then
+        full_repo=$(echo "$remote_url" | sed -E 's|.*github\.com[:/]([^/]+/[^/]+)(\.git)?.*|\1|' | sed 's/\.git$//')
+        if [ -n "$full_repo" ] && [ "$full_repo" != "$remote_url" ]; then
+          echo "📦 Auto-detected repository: $full_repo"
+          local repo_url="https://github.com/$full_repo"
+          echo "🌐 Opening $full_repo in browser..."
+          open "$repo_url"
+          return 0
+        fi
+      fi
+    fi
+    
+    echo "Not in a GitHub repository. Let's select an organization..."
+    local org
     org=$(_select_org)
     if [ -z "$org" ]; then
-      echo "No organization selected."
+      echo "❌ No organization selected."
       return 1
     fi
+    
+    # Now select repo from the chosen org
     echo "Selected organization: $org"
-  else
-    org="$1"
+    
+    # Set the org for the repo selection logic below
+    set -- "$org"
   fi
-
+  
+  # If argument provided, do manual organization selection
+  local org="$1"
+  
   # --- 2. Define Variables ---
   local repo_list
   local selected_repo
@@ -1111,18 +1266,16 @@ ghro() {
   local repo_url
 
   # --- 3. Get Repository List ---
-  # Use gh to list repos. If it fails, exit.
-  echo "Fetching repositories for '$org'..."
+  echo "🔍 Fetching repositories for '$org'..."
   repo_list=$(gh repo list "$org" --limit 1000) || return 1
 
   # Check if any repositories were found
   if [ -z "$repo_list" ]; then
-      echo "No repositories found for organization '$org' or organization does not exist."
+      echo "❌ No repositories found for organization '$org' or organization does not exist."
       return 1
   fi
 
   # --- 4. Calculate dynamic column widths ---
-  # Get the maximum repository name length
   local max_repo_width
   max_repo_width=$(echo "$repo_list" | awk '{if (length($1) > max) max = length($1)} END {print max}')
   
@@ -1145,18 +1298,46 @@ ghro() {
     --header="$repo_header VISIBILITY LANGUAGE     UPDATED     " \
     --delimiter=' ' --with-nth=1,2,3,4)
 
-  # --- 5. Open the Repository in Browser ---
-  # Proceed only if a repository was selected (fzf wasn't cancelled with Esc)
+  # --- 6. Open the Repository in Browser ---
   if [ -n "$selected_repo" ]; then
-    # Extract just the full repo name (e.g., "google/go-cloud")
     repo_name=$(echo "$selected_repo" | awk '{print $1}')
-    # Construct the GitHub URL
     repo_url="https://github.com/$repo_name"
     
-    echo "Opening $repo_name in browser..."
+    echo "🌐 Opening $repo_name in browser..."
     open "$repo_url"
   else
-    echo "No repository selected."
+    echo "❌ No repository selected."
+  fi
+}
+
+# ghprc (Git Pull Request Create) - Create PR and open in browser
+ghprc() {
+  echo "🚀 Creating pull request..."
+  
+  # Run gh pr create and capture output
+  local pr_output
+  pr_output=$(gh pr create "$@" 2>&1)
+  local create_status=$?
+  
+  if [ $create_status -ne 0 ]; then
+    echo "❌ Failed to create pull request:"
+    echo "$pr_output"
+    return 1
+  fi
+  
+  # Display the output (includes PR details)
+  echo "$pr_output"
+  
+  # Extract PR URL from output
+  local pr_url
+  pr_url=$(echo "$pr_output" | grep -o 'https://github\.com/[^/]*/[^/]*/pull/[0-9]*' | head -1)
+  
+  if [ -n "$pr_url" ]; then
+    echo "🔗 PR URL: $pr_url"
+    echo "🌐 Opening PR in browser..."
+    open "$pr_url"
+  else
+    echo "⚠️  Could not extract PR URL from output"
   fi
 }
 
