@@ -21,8 +21,8 @@ alias push='git push'
 alias pull='git pull'
 
 # programs
-alias gg='lazygit'
-alias dd='lazydocker'
+alias lg='lazygit'
+alias ld='lazydocker'
 
 alias k="kubectl"
 alias ka="kubectl apply -f . -R"

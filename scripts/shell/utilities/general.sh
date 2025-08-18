@@ -151,7 +151,7 @@ help() {
     echo "  gs            - git status"
     echo "  push          - git push"
     echo "  pull          - git pull"
-    echo "  gg            - Launch lazygit"
+    echo "  lg            - Launch lazygit"
     echo ""
     
     echo "🐙 GITHUB OPERATIONS"
@@ -174,6 +174,12 @@ help() {
     echo "🌐 NETWORK & API"
     echo "  add_req <collection> <name> \"<curl>\" - Add curl to ATAC collection"
     echo "  curlj         - curl with auto JSON detection & jqp viewer"
+    echo ""
+    
+    echo "📊 OBSERVABILITY"
+    echo "  ddsl          - Browse Datadog service logs (last 10 min)"
+    echo "  ddc           - View/manage Datadog configuration"
+    echo "  ddc setup     - Configure Datadog API credentials"
     echo ""
     
     echo "☸️  KUBERNETES"
@@ -204,7 +210,7 @@ help() {
     echo ""
     
     echo "🐳 CONTAINERS"
-    echo "  dd            - Launch lazydocker"
+    echo "  ld            - Launch lazydocker"
     echo ""
     
     echo "ℹ️  SHELL MANAGEMENT"

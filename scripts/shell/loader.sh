@@ -43,12 +43,13 @@ fi
 # List all available shell modules
 shell_modules() {
     echo "Available shell modules:"
-    echo "  profiling  - Performance profiling tools (zprofile_on, pzprof, etc.)"
-    echo "  git        - Git utilities and helpers (ghc, ffgn, fpr)"
-    echo "  navigation - File/directory navigation tools (ff, ffn, fch, y)"
-    echo "  utilities  - General utility functions (k_port, brewf, togglenetskope, etc.)"
-    echo "  network    - Network and API tools (add_req, curl_with_jqp)"
-    echo "  prompt     - Prompt configuration (always loaded)"
+    echo "  profiling     - Performance profiling tools (zprofile_on, pzprof, etc.)"
+    echo "  git           - Git utilities and helpers (ghc, ffgn, fpr)"
+    echo "  navigation    - File/directory navigation tools (ff, ffn, fch, y)"
+    echo "  utilities     - General utility functions (k_port, brewf, togglenetskope, etc.)"
+    echo "  network       - Network and API tools (add_req, curl_with_jqp)"
+    echo "  observability - Datadog and monitoring tools (ddsl, ddsl-config)"
+    echo "  prompt        - Prompt configuration (always loaded)"
     echo ""
     echo "All modules are now loaded automatically at shell startup."
     echo "Use 'shell_loaded' to see what's available."
@@ -73,6 +74,7 @@ shell_loaded() {
     command -v togglenetskope >/dev/null && echo "  ✓ utilities/general (togglenetskope, r_xml, k_port, brewf, help)"
     command -v ttn >/dev/null && echo "  ✓ utilities/terminal-tabs (ttn, tatn)"
     command -v add_req >/dev/null && echo "  ✓ network/api (add_req, curl_with_jqp)"
+    command -v ddsl >/dev/null && echo "  ✓ observability/datadog (ddsl, ddc, ddsl-config)"
     
     echo ""
     echo "Prompt functions are always available."
