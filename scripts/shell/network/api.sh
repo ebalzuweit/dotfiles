@@ -6,48 +6,9 @@
 [[ -n "${_NETWORK_API_LOADED}" ]] && return
 _NETWORK_API_LOADED=1
 
-# Add request to ATAC collection
-add_req() {
-    if [[ $# -lt 3 ]]; then
-        echo "Usage: add_req <collection_name> <request_name> \"<curl_command>\""
-        echo "Example: add_req my_api \"get_users\" \"curl -X GET https://api.example.com/users -H 'Authorization: Bearer token'\""
-        return 1
-    fi
-
-    local collection_name="$1"
-    local request_name="$2"
-    local curl_command="$3"
-
-    # Check if collection exists
-    local collections=$(atac collection list 2>/dev/null)
-    if ! echo "$collections" | grep -q "^$collection_name$"; then
-        echo "Error: Collection '$collection_name' does not exist."
-        echo "Available collections:"
-        atac collection list 2>/dev/null || echo "  (no collections found)"
-        echo "Create a collection first with: atac collection new <collection_name>"
-        return 1
-    fi
-
-    # Create a temporary file for the curl command
-    local temp_file=$(mktemp /tmp/curl_cmd.XXXXXX)
-    echo "$curl_command" > "$temp_file"
-
-    # Import the curl command using atac's built-in import functionality
-    if atac import curl "$temp_file" "$collection_name" "$request_name"; then
-        echo "✅ Successfully added request '$request_name' to collection '$collection_name'"
-    else
-        echo "❌ Failed to add request '$request_name' to collection '$collection_name'"
-        rm -f "$temp_file"
-        return 1
-    fi
-
-    # Clean up temporary file
-    rm -f "$temp_file"
-}
-
 # Curl wrapper that automatically pipes JSON/NDJSON output to jqp
 # Note: This overrides the default curl command - consider if you want this behavior
-curl_with_jqp() {
+curlj() {
     # Check if jqp is available
     if ! command -v jqp >/dev/null 2>&1; then
         # If jqp is not available, just run regular curl
@@ -144,5 +105,3 @@ curl_with_jqp() {
     return $curl_exit_code
 }
 
-# Optional: Create an alias instead of overriding curl
-alias curlj='curl_with_jqp'
