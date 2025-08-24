@@ -26,20 +26,18 @@ layout {
                 datetime_timezone "America/New_York"
             }
         }
-        children
+        pane {
+            children
+        }
     }
     tab name="dev" {
-        pane split_direction="horizontal" {
-            pane split_direction="vertical" {
-                pane {
-                    command "hx"
-                    name "editor"
-                    size "80%"
-                }
-                children
+        pane stacked=true {
+            pane {
+                command "hx"
+                args "./README.md"
+                name "editor"
             }
             pane {
-                size "30%"
                 name "terminal"
             }
         }
