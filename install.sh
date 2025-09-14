@@ -28,6 +28,8 @@ function installDotfiles() {
   cp -R nvim $HOME/.config/
   echo "  helix"
   cp -R helix $HOME/.config/
+  echo "  MangoHud"
+  cp -R MangoHud $HOME/.config/
   echo "  yazi"
   cp -R yazi $HOME/.config/
   echo "  zellij"
