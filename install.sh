@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# adapted from https://github.com/mathiasbynens/dotfiles/blob/main/bootstrap.sh
+# Adapted from <https://github.com/mathiasbynens/dotfiles/blob/main/bootstrap.sh>
 
 function installDotfiles() {
   echo "Installing:"
 
-  # copy files to home
+  # Files
+  
   echo "  .aliases"
   cp .aliases $HOME
   echo "  .paths"
@@ -22,6 +23,11 @@ function installDotfiles() {
   cp .wezterm.lua $HOME
   echo "  .vimrc"
   cp .vimrc $HOME
+
+  # Directories
+
+  echo "  alacritty"
+  cp -R alacritty $HOME/.config/
   echo "  btop"
   cp -R btop $HOME/.config/
   echo "  nvim"
