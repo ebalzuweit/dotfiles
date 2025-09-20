@@ -17,9 +17,13 @@ layout {
                 mode_normal  "#[bg=red]    "
                 mode_locked  "#[bg=blue]    "
                 mode_tmux    "#[bg=#ffc387]    "
-
-                tab_normal   "#[fg=#6C7086] {name} "
-                tab_active   "#[fg=#9399B2,bold,italic] {name} "
+                
+                tab_normal                "#[fg=#6C7086] {name} "
+                tab_active                "#[fg=#9399B2,bold,italic] {name} "
+                tab_display_count         "5"
+                // TODO: binding to move left / right between tabs
+                tab_truncate_start_format "#[fg=#6C7086] < +{count} ..."
+                tab_truncate_end_format   "#[fg=#6C7086] ... +{count} >"
 
                 datetime        "#[fg=#6C7086,bold] {format} "
                 datetime_format "%A, %d %b %Y %_I:%M %p"
