@@ -4,6 +4,7 @@ theme = "catppuccin_mocha"
 cursorline = true
 gutters = ["diagnostics", "line-numbers"]
 line-number = "relative"
+true-color = true
 end-of-line-diagnostics = "hint"
 
 [editor.cursor-shape]

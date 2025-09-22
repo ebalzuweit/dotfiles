@@ -1,11 +1,21 @@
 #!/bin/bash
 
-# adapted from https://github.com/mathiasbynens/dotfiles/blob/main/bootstrap.sh
+# Adapted from <https://github.com/mathiasbynens/dotfiles/blob/main/bootstrap.sh>
 
 function installDotfiles() {
+  case "$(uname -s)" in
+    Darwin)  OS="macos" ;;
+    Linux)   OS="linux" ;;
+    MINGW*)  OS="windows" ;;
+    *)       OS="unknown" ;;
+  esac
+  
+  echo "Detected operating system: $OS"
+  echo
   echo "Installing:"
 
-  # copy files to home
+  # Files
+  
   echo "  .aliases"
   cp .aliases $HOME
   echo "  .paths"
@@ -22,6 +32,15 @@ function installDotfiles() {
   cp .wezterm.lua $HOME
   echo "  .vimrc"
   cp .vimrc $HOME
+
+  # Directories
+
+  echo "  alacritty"
+  if [[ "$OS" == "windows" ]]; then
+    cp -R alacritty $APPDATA
+  else
+    cp -R alacritty $HOME/.config/
+  fi
   echo "  btop"
   cp -R btop $HOME/.config/
   echo "  nvim"
