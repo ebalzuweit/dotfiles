@@ -3,6 +3,15 @@
 # Adapted from <https://github.com/mathiasbynens/dotfiles/blob/main/bootstrap.sh>
 
 function installDotfiles() {
+  case "$(uname -s)" in
+    Darwin)  OS="macos" ;;
+    Linux)   OS="linux" ;;
+    MINGW*)  OS="windows" ;;
+    *)       OS="unknown" ;;
+  esac
+  
+  echo "Detected operating system: $OS"
+  echo
   echo "Installing:"
 
   # Files
@@ -27,7 +36,11 @@ function installDotfiles() {
   # Directories
 
   echo "  alacritty"
-  cp -R alacritty $HOME/.config/
+  if [[ "$OS" == "windows" ]]; then
+    cp -R alacritty $APPDATA
+  else
+    cp -R alacritty $HOME/.config/
+  fi
   echo "  btop"
   cp -R btop $HOME/.config/
   echo "  nvim"
