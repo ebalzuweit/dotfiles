@@ -2,26 +2,29 @@ layout {
     default_tab_template {
         pane size=1 borderless=true {
             plugin location="file:~/.config/zellij/plugins/zjstatus.wasm" {
-                format_left   "{mode} #[fg=#89B4FA,bold]{session}"
+                format_left   "{mode} #[fg=blue,bold]{session}"
                 format_center "{tabs}"
                 format_right  "{command_git_branch} {datetime}"
                 format_space  ""
 
                 border_enabled  "false"
                 border_char     "─"
-                border_format   "#[fg=#6C7086]{char}"
+                border_format   "#[fg=magenta]{char}"
                 border_position "bottom"
 
                 hide_frame_for_single_pane "true"
 
                 mode_normal  "#[bg=red]    "
                 mode_locked  "#[bg=blue]    "
-                mode_tmux    "#[bg=#ffc387]    "
+                mode_tmux    "#[bg=cyan]    "
+                
+                tab_normal                "#[fg=bg] {name} "
+                tab_active                "#[fg=fg,bold,italic] {name} "
+                tab_display_count         "5"
+                tab_truncate_start_format "#[fg=bg] < +{count} ..."
+                tab_truncate_end_format   "#[fg=bg] ... +{count} >"
 
-                tab_normal   "#[fg=#6C7086] {name} "
-                tab_active   "#[fg=#9399B2,bold,italic] {name} "
-
-                datetime        "#[fg=#6C7086,bold] {format} "
+                datetime        "#[fg=bg,bold] {format} "
                 datetime_format "%A, %d %b %Y %_I:%M %p"
                 datetime_timezone "America/New_York"
             }
