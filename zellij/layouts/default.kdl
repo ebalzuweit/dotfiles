@@ -21,7 +21,6 @@ layout {
                 tab_normal                "#[fg=#6C7086] {name} "
                 tab_active                "#[fg=#9399B2,bold,italic] {name} "
                 tab_display_count         "5"
-                // TODO: binding to move left / right between tabs
                 tab_truncate_start_format "#[fg=#6C7086] < +{count} ..."
                 tab_truncate_end_format   "#[fg=#6C7086] ... +{count} >"
 
