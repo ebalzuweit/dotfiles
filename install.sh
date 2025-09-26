@@ -43,6 +43,8 @@ function installDotfiles() {
   fi
   echo "  btop"
   cp -R btop $HOME/.config/
+  echo "  lazygit"
+  cp -R lazygit $HOME/.config/
   echo "  nvim"
   cp -R nvim $HOME/.config/
   echo "  helix"
