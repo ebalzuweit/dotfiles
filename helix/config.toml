@@ -5,7 +5,7 @@ cursorline = true
 gutters = ["diagnostics", "line-numbers"]
 line-number = "relative"
 true-color = true
-end-of-line-diagnostics = "hint"
+# end-of-line-diagnostics = "hint"
 
 [editor.cursor-shape]
 insert = "bar"
@@ -16,8 +16,8 @@ select = "underline"
 display-inlay-hints = true
 display-messages = true
 
-[editor.inline-diagnostics]
-cursor-line = "warning"
+# [editor.inline-diagnostics]
+# cursor-line = "warning"
 
 [editor.file-picker]
 hidden = false
