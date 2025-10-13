@@ -36,8 +36,8 @@ layout {
     tab name="dev" {
         pane stacked=true {
             pane {
-                command "hx"
-                args "./README.md"
+                command "sh"
+                args "-c" "hx ./README.md || helix ./README.md"
                 name "editor"
             }
             pane {
