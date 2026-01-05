@@ -1,6 +1,7 @@
 theme = "catppuccin_mocha"
 
 [editor]
+shell = ["bash", "-c"]
 cursorline = true
 gutters = ["diagnostics", "line-numbers"]
 line-number = "relative"
@@ -32,15 +33,15 @@ C-j = "jump_view_down"
 C-k = "jump_view_up"
 C-l = "jump_view_right"
 
-[keys.normal.space]
+# [keys.normal.space]
 # Replace File Explorer with yazi
-e = [
-  ':sh rm -f /tmp/unique-file',
-  ':insert-output yazi %{buffer_name} --chooser-file=/tmp/unique-file',
-  ':insert-output echo "\x1b[?1049h\x1b[?2004h" > /dev/tty',
-  ':open %sh{cat /tmp/unique-file}',
-  ':redraw',
-]
+# e = [
+#   ':sh rm -f /tmp/unique-file',
+#   ':insert-output yazi %{buffer_name} --chooser-file=/tmp/unique-file',
+#   ':insert-output echo "\x1b[?1049h\x1b[?2004h" > /dev/tty',
+#   ':open %sh{cat /tmp/unique-file }',
+#   ':redraw',
+# ]
 
 [keys.normal.space.g]
 d = [":new", ":insert-output lazydocker", ":buffer-close!", ":redraw"]
