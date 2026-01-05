@@ -13,6 +13,7 @@ decorations = "full"
 title = "terminal"
 opacity = 0.8
 decorations_theme_variant = "None" # Use system default
+option_as_alt = "Both"
 
 [window.dimensions]
 columns = 120
