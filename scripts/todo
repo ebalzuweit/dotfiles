@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e
+
+in_git_repo=$(git rev-parse --is-inside-work-tree 2>/dev/null || echo "false")
+
+if [ "$in_git_repo" != "true" ]; then
+	echo "TODO"
+	grep -r "TODO" . || true
+	echo ""
+
+	echo "FIXME"
+	grep -r "FIXME" . || true
+	echo ""
+
+	echo "HACK"
+	grep -r "HACK" . || true
+	echo ""
+else
+	echo "TODO"
+	git grep -E "TODO" || true
+	echo ""
+
+	echo "FIXME"
+	git grep -E "FIXME" || true
+	echo ""
+
+	echo "HACK"
+	git grep -E "HACK" || true
+	echo ""
+fi
