@@ -23,6 +23,7 @@ alias gg='lazygit'
 alias dd='lazydocker'
 alias zj='zellij'
 alias dev='name="$(basename $(pwd))";zellij -l dev options --session-name "$name" --attach-to-session true'
+alias loom='(cd $HOME/source/repos/loom && go run .)'
 
 # commands
 cdr() {
