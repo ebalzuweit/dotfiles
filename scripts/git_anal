@@ -1,0 +1,10 @@
+#!/bin/bash
+
+echo "What changes the most:"
+git log --format=format: --name-only --since="1 year ago" | sort | uniq -c | sort -nr | head -20
+
+echo "Who commits the most:"
+git shortlog -sn --no-merges
+
+echo "How commits are distributed:"
+git log --format='%ad' --date=format:'%Y-%m' | sort | uniq -c
