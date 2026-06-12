@@ -43,6 +43,10 @@ layout {
             pane {
                 name "terminal"
             }
+            pane {
+                command "lazygit"
+                name "lazygit"
+            }
         }
     }
 }
