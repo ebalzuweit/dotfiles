@@ -47,6 +47,10 @@ layout {
                 command "lazygit"
                 name "lazygit"
             }
+            pane {
+                command "codex"
+                name "codex"
+            }
         }
     }
 }
