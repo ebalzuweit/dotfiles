@@ -52,6 +52,11 @@ def parse_args() -> argparse.Namespace:
         help="show commits whose local date is YYYY-MM-DD; overrides --days",
     )
     parser.add_argument(
+        "--author",
+        metavar="SUBSTRING",
+        help="show commits whose Git author name contains SUBSTRING",
+    )
+    parser.add_argument(
         "--days",
         type=int,
         default=14,
@@ -84,7 +89,7 @@ def remote_branches() -> list[str]:
 
 
 def recent_commits(
-    branch: str, date: dt.date | None, since: int
+    branch: str, date: dt.date | None, since: int, author_filter: str | None
 ) -> list[tuple[str, int, str, str]]:
     arguments = ["log", branch]
     if date is None:
@@ -106,7 +111,8 @@ def recent_commits(
         fields = record.split("\x1f")
         if len(fields) != 4:
             raise GitError(f"could not parse git log output for {branch}")
-        commits.append((fields[0], int(fields[1]), fields[2], fields[3]))
+        if author_filter is None or author_filter.casefold() in fields[2].casefold():
+            commits.append((fields[0], int(fields[1]), fields[2], fields[3]))
     return commits
 
 
@@ -149,8 +155,20 @@ def print_report(branch_commits: dict[str, list[Commit]]) -> None:
         print("No remote branch activity in the selected period.")
         return
 
-    print("Recent remote branch activity")
-    print("=" * 32)
+    unique_commits = {
+        commit.hash: commit
+        for _, commits in active
+        for commit in commits
+    }
+    total_commits = len(unique_commits)
+    total_additions = sum(commit.additions for commit in unique_commits.values())
+    total_deletions = sum(commit.deletions for commit in unique_commits.values())
+    print(
+        "Recent remote branch activity "
+        f"({len(active)} branches, {total_commits} commits, "
+        f"+{total_additions}/-{total_deletions})"
+    )
+    print("=" * 72)
     for branch, commits in active:
         additions = sum(commit.additions for commit in commits)
         deletions = sum(commit.deletions for commit in commits)
@@ -175,7 +193,7 @@ def main() -> int:
         activity = {
             branch: [
                 make_commit(raw, cache)
-                for raw in recent_commits(branch, args.date, since)
+                for raw in recent_commits(branch, args.date, since, args.author)
             ]
             for branch in remote_branches()
         }
